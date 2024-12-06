@@ -21,12 +21,12 @@ const int numObs = 1;
 
 extern const Line line1;
 extern Obstacle* obstacles[];
-extern const Point targetPoints[];
+extern Point targetPoints[];
 
 class ServoVehicleState : public State
 {
 public:
-    ServoVehicleState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, bool stateRecordsOwnData = true);
+    ServoVehicleState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter);
     void updateState(double newTime = -1) override;
     int buzzerPin;
 
