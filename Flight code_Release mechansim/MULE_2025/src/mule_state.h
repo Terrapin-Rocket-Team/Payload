@@ -17,7 +17,7 @@ enum MuleStages {
 class MuleState : public State
 {
 public:
-    MuleState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, bool stateRecordsOwnData = true);
+    MuleState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter);
     void updateState(double newTime = -1) override;
     int buzzerPin;
 

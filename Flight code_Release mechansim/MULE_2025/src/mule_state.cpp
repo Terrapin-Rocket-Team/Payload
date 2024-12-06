@@ -2,7 +2,7 @@
 
 using namespace mmfs;
 
-MuleState::MuleState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, bool stateRecordsOwnData) : State(sensors, numSensors, kfilter, stateRecordsOwnData)
+MuleState::MuleState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter) : State(sensors, numSensors, kfilter)
 {
     stage = PRELAUNCH;
     timeOfLaunch = 0;
@@ -43,8 +43,8 @@ void MuleState::determineStage()
             if (sensorOK(sensors[i]))
             {
                 char logData[200];
-                snprintf(logData, 200, "%s: %s", sensors[i]->getName(), sensors[i]->getStaticDataString());
-                logger.recordLogData(INFO_, logData);
+                //snprintf(logData, 200, "%s: %s", sensors[i]->getName(), sensors[i]->getStaticDataString());
+                //logger.recordLogData(INFO_, logData);
                 sensors[i]->setBiasCorrectionMode(false);
             }
         }
