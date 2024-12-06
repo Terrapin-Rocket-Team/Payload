@@ -3,6 +3,7 @@
 
 #include "MMFS.h"
 #include "Target.h"
+#include <PWMServo.h>
 
 using namespace mmfs;
 
@@ -25,13 +26,21 @@ extern Point targetPoints[];
 
 class ServoVehicleState : public State
 {
+
+static PWMServo leftServo;
+static PWMServo rightServo;
+
 public:
     ServoVehicleState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter);
     void updateState(double newTime = -1) override;
-    int buzzerPin;
+
+    int stage;
 
     bool topParachuteFlag;
     bool releasedFlag;
+
+    double left_servo_value;
+    double right_servo_value; 
 
     imu::Vector<2> g; // wind speed in m/s (2D velocity vector) bad comment
     imu::Vector<2> w; // wind speed in m/s (2D velocity vector)
@@ -41,11 +50,16 @@ public:
     void determineTADPOLStage();
     Point getTargetCoordinates();
     Point getWindCorrectionCoordinates(Point r);
-    //imu::Vector<3> getInertialAngularVelocity();
+
+    // Servo Functions
+    void servoSetup(int leftServoPin,int rightServoPin,double leftSetNeutral,double rightSetNeutral);
+    void moveServo(double delta);
+    double findDelta(double phi, double gamma);
+    void goDirection(double direction);
 
 private:
     void determineStage();
-    int stage;
+
     double timeOfLaunch;
     double timeOfLastStage;
     double timeOfDay;

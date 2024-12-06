@@ -6,6 +6,10 @@
 #include "bno055_breakout.h"
 #include "max_m10s_breakout.h"
 
+// Function Declarations
+double getGoalAngle(Point target, Point current);
+
+// Buzzer
 const int BUZZER_PIN = 17;
 int allowedPins[] = {BUZZER_PIN};
 BlinkBuzz bb(allowedPins, 1, true);
@@ -16,9 +20,15 @@ BNO055_Breakout vehicle_imu;
 MAX_M10S_Breakout gps;
 mmfs::Sensor* mule_sensors[2] = {&barometer, &vehicle_imu};
 
+double DEFUALT_GOAL = 0; //defined between [0,360] going ccw from north
+
 // Initialize state
 ServoVehicleKF kf;
 ServoVehicleState SERVO_VEHICLE(mule_sensors, 2, &kf);
+
+// Servos
+PWMServo ServoVehicleState::leftServo; //allows for PMWServo objects to be accessed by servo functions in file
+PWMServo ServoVehicleState::rightServo; //allows for PMWServo objects to be accessed by servo functions in file
 
 // MMFS Stuff
 mmfs::Logger logger;
@@ -65,6 +75,9 @@ void setup() {
     }
     logger.writeCsvHeader();
 
+    logger.recordLogData(mmfs::INFO_, "Setting Up Servos");
+    SERVO_VEHICLE.servoSetup(2, 3, 90, 90);
+
     logger.recordLogData(mmfs::INFO_, "Leaving Setup");
 }
 
@@ -79,4 +92,38 @@ void loop() {
     
     SERVO_VEHICLE.updateState();
     logger.recordFlightData();
+
+  // Test code for finding the correct goal angle without active gps onsite
+  //  Point targetCoords = TADPOLSTATE.getTargetCoordinates();
+  //  double goal = getGoalAngle(targetCoords, Point(-75.87600, 39.07978));
+  //  TADPOLSTATE.goDirection(goal);
+  //  Serial.println(targetCoords.x, 8);
+  //  Serial.println(targetCoords.y, 8);
+  //  Serial.println(goal);
+  Point targetCoords;
+  double goalAngle = DEFUALT_GOAL;
+  if (SERVO_VEHICLE.stage == MAIN) {
+    if (gps.getFixQual() > 3) {
+      targetCoords = SERVO_VEHICLE.getTargetCoordinates();
+      goalAngle = getGoalAngle(targetCoords, Point(gps.getPos().y(), gps.getPos().x())); // longitude, latitude
+      SERVO_VEHICLE.goDirection(goalAngle);
+    }
+    else {
+      SERVO_VEHICLE.goDirection(DEFUALT_GOAL);
+    }
+  }
+  else if (SERVO_VEHICLE.stage == LANDED) {
+    SERVO_VEHICLE.servoSetup(2, 3, 90, 90);
+  }
+}
+
+double getGoalAngle(Point target, Point current) {
+  //Returns an angle from [0:360] from north to get to a target from a current point
+  double theta = atan2(target.y - current.y, target.x - current.x);
+  theta = theta * 180 / 3.14;
+  double goal = 270 + theta;
+  if (goal > 360) {
+    goal -= 360;
+  }
+  return goal;
 }

@@ -103,3 +103,58 @@ Point ServoVehicleState::getWindCorrectionCoordinates(Point r){
   return averageWindCorrectionCoords;
 
 }
+
+// Servo Functions
+
+void ServoVehicleState::servoSetup(int leftServoPin,int rightServoPin,double leftSerNeutral,double rightSerNeutral){ //input the servo pins, and the value for the servo to be up
+  leftServo.attach(leftServoPin);
+  rightServo.attach(rightServoPin);
+  leftServo.write(leftSerNeutral);
+  rightServo.write(rightSerNeutral);
+}
+
+void ServoVehicleState::moveServo(double delta){
+  //See https://github.com/Terrapin-Rocket-Team/SAC-TRT24/blob/main/Code/Payload/Orientation%20Matlab/Orientation.md for
+  //an explaination of how the values here were derivated
+  double pi = 3.14;
+  double leftservo_angle_offset_from_body = 90;
+  double rightservo_angle_offset_from_body = 0;
+
+  double left_servo_value = 90*(cos((leftservo_angle_offset_from_body-delta)*(pi/180)) + 1);
+  double right_servo_value = 90*(cos((rightservo_angle_offset_from_body-delta)*(pi/180)) + 1);
+
+  //Serial.print("Left Servo Value: "); Serial.print(left_servo_value); Serial.print(", Right Servo Value: "); Serial.println(right_servo_value);
+  if (left_servo_value <= 90){left_servo_value = 0;}
+  else{left_servo_value = 180;}
+  if (right_servo_value <= 90){right_servo_value = 0;}
+  else{right_servo_value = 180;}
+
+  leftServo.write(left_servo_value);
+  rightServo.write(right_servo_value);
+}
+
+double ServoVehicleState::findDelta(double psi, double gamma){
+  //See https://github.com/Terrapin-Rocket-Team/SAC-TRT24/blob/main/Code/Payload/Orientation%20Matlab/Orientation.md for
+  //an explaination of how the values here were derivated
+
+  //Change the yaw in [-180,180] to [0,360]
+  if(psi<0) psi += 360;
+
+  //Find delta
+  return psi - gamma;
+}
+
+
+void ServoVehicleState::goDirection(double goal){
+  //See https://github.com/Terrapin-Rocket-Team/SAC-TRT24/blob/main/Code/Payload/Orientation%20Matlab/Orientation.md for
+  //the pseudocode
+  goal += 180;
+  if(goal>360){goal -= 360;}
+
+  IMU *imu = reinterpret_cast<IMU *>(getSensor(IMU_));
+  mmfs::Vector<3> ori = imu->getOrientation().toEuler(); //function from BNO55.cpp
+  double yaw = ori.z(); //body frame from Inertial frame angle
+  double delta = findDelta(yaw, goal);
+  moveServo(delta);
+
+}
