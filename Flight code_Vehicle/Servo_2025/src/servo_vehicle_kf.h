@@ -1,14 +1,14 @@
-#ifndef TAIL_ROTOR_KF_H
-#define TAIL_ROTOR_KF_H
+#ifndef SERVO_VEHICLE_KF_H
+#define SERVO_VEHICLE_KF_H
 
 #include "../src/Filters/LinearKalmanFilter.h"
 
 namespace mmfs {
 
-class TailRotorKF : public LinearKalmanFilter {
+class ServoVehicleKF : public LinearKalmanFilter {
 public:
-    TailRotorKF();
-    ~TailRotorKF() = default;
+    ServoVehicleKF();
+    ~ServoVehicleKF() = default;
 
     // Override getter methods to provide subteam-specific matrix implementations
     void initialize() override {};
@@ -21,4 +21,4 @@ public:
 
 } // namespace mmfs
 
-#endif // TAIL_ROTOR_KF_H
+#endif // SERVO_VEHICLE_KF_H

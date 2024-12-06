@@ -1,4 +1,4 @@
-#include "tail_rotor_state.h"
+#include "servo_vehicle_state.h"
 
 using namespace mmfs;
 
@@ -13,7 +13,7 @@ const Point targetPoints[] = {
         Point(-106.920284, 32.943033)
 };
 
-TailRotorState::TailRotorState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, bool stateRecordsOwnData) : State(sensors, numSensors, kfilter, stateRecordsOwnData)
+ServoVehicleState::ServoVehicleState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, bool stateRecordsOwnData) : State(sensors, numSensors, kfilter, stateRecordsOwnData)
 {
     stage = PRELAUNCH;
     timeOfLaunch = 0;
@@ -21,13 +21,13 @@ TailRotorState::TailRotorState(Sensor **sensors, int numSensors, LinearKalmanFil
     timeOfDay = 0;
 }
 
-void TailRotorState::updateState(double newTime)
+void ServoVehicleState::updateState(double newTime)
 {
     State::updateState(newTime); // call base version for sensor updates
     determineStage(); // determine the stage of the flight
 }
 
-void TailRotorState::determineStage() // TODO Change this for the tail rotor
+void ServoVehicleState::determineStage() // TODO Change this for the tail rotor
 {
     int timeSinceLaunch = currentTime - timeOfLaunch;
     IMU *imu = reinterpret_cast<IMU *>(getSensor(IMU_));
@@ -98,12 +98,12 @@ void TailRotorState::determineStage() // TODO Change this for the tail rotor
     }
 }
 
-void TailRotorState::fanSetup(int fowardFanPin,int backwardFanPin){
+void ServoVehicleState::fanSetup(int fowardFanPin,int backwardFanPin){
   pinMode(fowardFanPin, OUTPUT);
   pinMode(backwardFanPin, OUTPUT);
 }
 
-void TailRotorState::runFan(double pwm, int forwardFanPin, int backwardFanPin){
+void ServoVehicleState::runFan(double pwm, int forwardFanPin, int backwardFanPin){
 
   // Pick the direction that the fan spins
   if (pwm == 0){
@@ -143,7 +143,7 @@ void TailRotorState::runFan(double pwm, int forwardFanPin, int backwardFanPin){
 }
 
 
-double TailRotorState::findPWM(double goal, double timeSinceLastIteration){
+double ServoVehicleState::findPWM(double goal, double timeSinceLastIteration){
   //Input goal is angle to position [-180:180] off the y-axis (CCW +)
   //Input timeSinceLastIteration should be in seconds
 
@@ -179,7 +179,7 @@ double TailRotorState::findPWM(double goal, double timeSinceLastIteration){
   return pwm;
 }
 
-Point TailRotorState::getTargetCoordinates(){
+Point ServoVehicleState::getTargetCoordinates(){
   GPS *gps = reinterpret_cast<GPS *>(getSensor(GPS_));
   double x = gps->getPos().y(); // longitude 
   double y = gps->getPos().x(); // latitude
@@ -227,7 +227,7 @@ Point TailRotorState::getTargetCoordinates(){
   return closestPoint;
 }
 
-Point TailRotorState::getWindCorrectionCoordinates(Point r){
+Point ServoVehicleState::getWindCorrectionCoordinates(Point r){
   // Design and logic in this doc (https://docs.google.com/document/d/1soUME8JDSpf028hsgl010TmuEHOHm2ZJCv7ecYDvrWE/edit)
   // Input r is the desired heading point w/o wind
 

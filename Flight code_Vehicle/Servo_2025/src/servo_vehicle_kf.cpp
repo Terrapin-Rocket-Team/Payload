@@ -1,11 +1,11 @@
-#include "tail_rotor_kf.h"
+#include "servo_vehicle_kf.h"
 
 namespace mmfs {
 
 // Define the measurement size, control size, and state size
-TailRotorKF::TailRotorKF() : LinearKalmanFilter(3, 3, 6) {}
+ServoVehicleKF::ServoVehicleKF() : LinearKalmanFilter(3, 3, 6) {}
 
-Matrix TailRotorKF::getF(double dt) {
+Matrix ServoVehicleKF::getF(double dt) {
     double *data = new double[36]{
         1.0, 0, 0, dt, 0, 0,
         0, 1.0, 0, 0, dt, 0,
@@ -17,7 +17,7 @@ Matrix TailRotorKF::getF(double dt) {
     return Matrix(6, 6, data);
 }
 
-Matrix TailRotorKF::getG(double dt) {
+Matrix ServoVehicleKF::getG(double dt) {
     double *data = new double[18]{
         0.5 * dt * dt, 0, 0,
         0, 0.5 * dt * dt, 0,
@@ -29,7 +29,7 @@ Matrix TailRotorKF::getG(double dt) {
     return Matrix(6, 3, data);
 }
 
-Matrix TailRotorKF::getH() {
+Matrix ServoVehicleKF::getH() {
     double *data = new double[18]{
         1.0, 0, 0, 0, 0, 0,
         0, 1.0, 0, 0, 0, 0,
@@ -38,7 +38,7 @@ Matrix TailRotorKF::getH() {
     return Matrix(3, 6, data);
 }
 
-Matrix TailRotorKF::getR() {
+Matrix ServoVehicleKF::getR() {
     double *data = new double[9]{
         1.0, 0, 0,
         0, 1.0, 0,
@@ -47,7 +47,7 @@ Matrix TailRotorKF::getR() {
     return Matrix(3, 3, data);
 }
 
-Matrix TailRotorKF::getQ() {
+Matrix ServoVehicleKF::getQ() {
     double *data = new double[36]{
         0.1, 0, 0, 0, 0, 0,
         0, 0.1, 0, 0, 0, 0,
