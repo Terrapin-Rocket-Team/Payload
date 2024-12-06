@@ -10,7 +10,7 @@ PWMServo TADPOLState::leftServo; //allows for PMWServo objects to be accessed by
 PWMServo TADPOLState::rightServo;
 
 double DEFUALT_GOAL = 0; //defined between [0,360] going ccw from north
-int BUZZER_PIN = 17;
+int BUZZER_PIN = 9;
 
 void setup() {
   buzz(BUZZER_PIN, 1000);
@@ -59,13 +59,13 @@ void loop() {
   TADPOLSTATE.determineTADPOLStage();
 
   // Test code for finding the correct goal angle without active gps onsite
-   Point targetCoords = TADPOLSTATE.getTargetCoordinates();
-   double goal = getGoalAngle(targetCoords, Point(-76.105696, 38.995326));
-   TADPOLSTATE.goDirection(goal);
-   Serial.println(targetCoords.x, 8);
-   Serial.println(targetCoords.y, 8);
-   Serial.println(goal);
-  //Point targetCoords;
+  // Point targetCoords = TADPOLSTATE.getTargetCoordinates();
+  // double goal = getGoalAngle(targetCoords, Point(-76.105696, 38.995326));
+  // TADPOLSTATE.goDirection(goal);
+  // Serial.println(targetCoords.x, 8);
+  // Serial.println(targetCoords.y, 8);
+  // Serial.println(goal);
+  Point targetCoords;
   double goalAngle = DEFUALT_GOAL;
   if (TADPOLSTATE.stage == "Main") {
     if (TADPOLSTATE.stateGPS.satellites > 3) {

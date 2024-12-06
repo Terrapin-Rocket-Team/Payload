@@ -11,9 +11,9 @@ const int numObs = 4;
 // Obstacle* obstacles[] = {
 // };
 
-Point targetPoints[] = {
-        Point(-76.10574722, 38.99640556)
-};
+// Point targetPoints[] = {
+//         Point(-76.0981911, 39.0052483),
+// };
 
 class TADPOLState: public State{
 
@@ -147,6 +147,7 @@ void TADPOLState::determineTADPOLStage(){
     stage = "Coasting";
     recordDataStage = "Flight";
   }
+  Serial.println(stage);
 }
 
 Point TADPOLState::getTargetCoordinates(){
@@ -154,20 +155,22 @@ Point TADPOLState::getTargetCoordinates(){
   double y = stateGPS.latitude;
   Point current(x, y);
 
-  current = Point(-76.105696, 38.995326);
+  return Point(-76.0981911, 39.0052483);
+
+  //current = Point(-76.105696, 38.995326);
 
   // copies targets into a valids array and a safes array
-  Point valids[numTarg];
-  for(int i = 0; i < numTarg; i++){
-      valids[i] = targetPoints[i];
-  }
+  // Point valids[numTarg];
+  // for(int i = 0; i < numTarg; i++){
+  //     valids[i] = targetPoints[i];
+  // }
 
-  Point safes[numTarg];
-  for(int i = 0; i < numTarg; i++){
-      safes[i] = targetPoints[i];
-  }
+  // Point safes[numTarg];
+  // for(int i = 0; i < numTarg; i++){
+  //     safes[i] = targetPoints[i];
+  // }
 
-  // loops through all targets
+  // // loops through all targets
   // for (int i = 0; i < numTarg; i++) {
   //     // checks if a target point from the valid list interacts with an obstacle
   //     for (Obstacle* obs : obstacles) {
@@ -185,17 +188,17 @@ Point TADPOLState::getTargetCoordinates(){
   //     }
   // }
 
-  // determines the best point to go to
-  Point closestSafePoint = closest(current, safes, numTarg);
-  if (closestSafePoint != Point(0.0, 0.0))
-      return closestSafePoint;
+  // // determines the best point to go to
+  // Point closestSafePoint = closest(current, safes, numTarg);
+  // if (closestSafePoint != Point(0.0, 0.0))
+  //     return closestSafePoint;
   
-  Point closestValidPoint = closest(current, valids, numTarg);
-  if (closestValidPoint != Point(0.0, 0.0))
-      return closestValidPoint;
+  // Point closestValidPoint = closest(current, valids, numTarg);
+  // if (closestValidPoint != Point(0.0, 0.0))
+  //     return closestValidPoint;
 
-  Point closestPoint = closest(current, targetPoints, numTarg);
-  return closestPoint;
+  // Point closestPoint = closest(current, targetPoints, numTarg);
+  // return closestPoint;
 }
 
 void TADPOLState::turnRateDriver(double goalAngle, double loopTime) {
