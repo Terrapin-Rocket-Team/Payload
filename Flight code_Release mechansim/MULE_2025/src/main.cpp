@@ -4,6 +4,7 @@
 #include "mule_state.h"
 #include "bmp280_breakout.h"
 #include "bno055_breakout.h"
+#include "bh1750_breakout.h"
 
 const int BUZZER_PIN = 33; // TODO update this to whats actually on the board
 int allowedPins[] = {BUZZER_PIN};
@@ -11,12 +12,13 @@ BlinkBuzz bb(allowedPins, 1, true);
 
 // Sensors
 BMP280_Breakout barometer;
-mmfs::BNO055_Breakout mule_imu;
-mmfs::Sensor* mule_sensors[2] = {&barometer, &mule_imu};
+BNO055_Breakout mule_imu;
+BH1750_Breakout light_sensor;
+mmfs::Sensor* mule_sensors[3] = {&barometer, &mule_imu, &light_sensor};
 
 // Initialize state
 MuleKF kf;
-MuleState MULE(mule_sensors, 2, &kf);
+MuleState MULE(mule_sensors, 3, &kf);
 
 // MMFS Stuff
 mmfs::Logger logger;
