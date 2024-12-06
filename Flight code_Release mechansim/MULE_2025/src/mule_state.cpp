@@ -17,22 +17,13 @@ void MuleState::updateState(double newTime)
 }
 
 void MuleState::determineStage()
-{
+{   
     int timeSinceLaunch = currentTime - timeOfLaunch;
     IMU *imu = reinterpret_cast<IMU *>(getSensor(IMU_));
     Barometer *baro = reinterpret_cast<Barometer *>(getSensor(BAROMETER_));
-    if (stage == 0 &&
-        (sensorOK(imu) || sensorOK(baro)) &&
-        (sensorOK(imu) ? abs(imu->getAccelerationGlobal().z()) > 25 : true) &&
-        (sensorOK(baro) ? baro->getAGLAltFt() > 60 : true))
-    // if we are in preflight AND
-    // we have either the IMU OR the barometer AND
-    // imu is ok AND the z acceleration is greater than 29 ft/s^2 OR imu is not ok AND
-    // barometer is ok AND the relative altitude is greater than 30 ft OR baro is not ok
-    // essentially, if we have either sensor and they meet launch threshold, launch. Otherwise, it will never detect a launch.
-    {
-        bb.aonoff(buzzerPin, 200);
+    if(stage == PRELAUNCH && imu->getAccelerationGlobal().z() > 30){
         logger.setRecordMode(FLIGHT);
+        bb.aonoff(33, 200);
         stage = BOOST;
         timeOfLaunch = currentTime;
         timeOfLastStage = currentTime;
@@ -42,47 +33,56 @@ void MuleState::determineStage()
         {
             if (sensorOK(sensors[i]))
             {
-                char logData[200];
-                //snprintf(logData, 200, "%s: %s", sensors[i]->getName(), sensors[i]->getStaticDataString());
-                //logger.recordLogData(INFO_, logData);
                 sensors[i]->setBiasCorrectionMode(false);
             }
         }
     }
-    else if (stage == BOOST && abs(acceleration.z()) < 10)
-    {
-        bb.aonoff(buzzerPin, 200, 2);
+    else if(stage == BOOST && imu->getAccelerationGlobal().z() < 0){
+        bb.aonoff(33, 200, 2);
         timeOfLastStage = currentTime;
         stage = COAST;
         logger.recordLogData(INFO_, "Coasting detected.");
     }
-    else if (stage == COAST && baroVelocity <= 0 && timeSinceLaunch > 5)
-    {
-        bb.aonoff(buzzerPin, 200, 3);
+    else if(stage == COAST && baroVelocity <= 0 && timeSinceLaunch > 5){ // TODO fix this, this baroVelocity is not resistant to noise
+        bb.aonoff(33, 200, 2);
+        timeOfLastStage = currentTime;
         char logData[100];
         snprintf(logData, 100, "Apogee detected at %.2f m.", position.z());
         logger.recordLogData(INFO_, logData);
-        timeOfLastStage = currentTime;
         stage = DROUGE;
-        logger.recordLogData(INFO_, "Drogue conditions detected.");
+        logger.recordLogData(INFO_, "Drogue detected.");
     }
-    else if (stage == DROUGE && baro->getAGLAltFt() < 1000 && timeSinceLaunch > 10)
-    {
-        bb.aonoff(buzzerPin, 200, 4);
-        stage = MAIN;
+    else if(stage == DROUGE && baro->getAGLAltFt() < 1000){ // TODO get this number of drogue deployment
+        bb.aonoff(33, 200, 2);
         timeOfLastStage = currentTime;
-        logger.recordLogData(INFO_, "Main parachute conditions detected.");
+        stage = MAIN;
+        logger.recordLogData(INFO_, "Main detected.");
     }
-    else if (stage == MAIN && baroVelocity > -1 && baro->getAGLAltFt() < 66 && timeSinceLaunch > 15)
-    {
-        bb.aonoff(buzzerPin, 200, 5);
+    else if(stage == MAIN && ((baro->getAGLAltFt() < 100) || ((currentTime - timeOfLastStage) > 600000))){
+        bb.aonoff(33, 200, 2);
         timeOfLastStage = currentTime;
         stage = LANDED;
-        logger.recordLogData(INFO_, "Landing detected. Waiting for 5 seconds to dump data.");
+        logger.recordLogData(INFO_, "Landing detected.");
     }
-    else if (stage == LANDED && currentTime - timeOfLastStage > 5)
+    else if (stage == LANDED && currentTime - timeOfLastStage > 60) // TODO check if it can dump data in 60 seconds
     {
+        stage = DUMPED;
         logger.setRecordMode(GROUND);
         logger.recordLogData(INFO_, "Dumped data after landing.");
+    }
+    else if((stage == PRELAUNCH || stage == BOOST) && baro->getAGLAltFt() > 250){
+        logger.setRecordMode(FLIGHT);
+        bb.aonoff(33, 200, 2);
+        timeOfLastStage = currentTime;
+        stage = COAST;
+        logger.recordLogData(INFO_, "Launch detected. Using Backup Condition.");
+        logger.recordLogData(INFO_, "Printing static data.");
+        for (int i = 0; i < maxNumSensors; i++)
+        {
+            if (sensorOK(sensors[i]))
+            {
+                sensors[i]->setBiasCorrectionMode(false);
+            }
+        }
     }
 }

@@ -11,7 +11,8 @@ enum MuleStages {
     COAST,
     DROUGE,
     MAIN,
-    LANDED
+    LANDED,
+    DUMPED
 };
 
 class MuleState : public State
