@@ -4,6 +4,7 @@
 #include "servo_vehicle_state.h"
 #include "bmp280_breakout.h"
 #include "bno055_breakout.h"
+#include "max_m10s_breakout.h"
 
 const int BUZZER_PIN = 17;
 int allowedPins[] = {BUZZER_PIN};
@@ -12,7 +13,7 @@ BlinkBuzz bb(allowedPins, 1, true);
 // Sensors
 BMP280_Breakout barometer;
 BNO055_Breakout vehicle_imu;
-//M10_MAX_Breakout gps;
+MAX_M10S_Breakout gps;
 mmfs::Sensor* mule_sensors[2] = {&barometer, &vehicle_imu};
 
 // Initialize state
