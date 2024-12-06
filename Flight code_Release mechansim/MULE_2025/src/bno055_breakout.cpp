@@ -27,14 +27,14 @@ namespace mmfs
 
         orientation = convertIMUtoMMFS(bno.getQuat());
         //check the i2c bus to make sure the BNO didn't misbehave
-        Wire.beginTransmission(0x28); //BNO default address. TODO: Allow users to change addresses of devices
-        byte b = Wire.endTransmission();
-        if (b != 0x00)
-        {
-            Wire.end();
-            Wire.begin();
-            logger.recordLogData(ERROR_, "I2C Error");
-        }
+        // Wire.beginTransmission(0x28); //BNO default address. TODO: Allow users to change addresses of devices
+        // byte b = Wire.endTransmission();
+        // if (b != 0x00)
+        // {
+        //     Wire.end();
+        //     Wire.begin();
+        //     logger.recordLogData(ERROR_, "I2C Error");
+        // }
     }
 
     void BNO055_Breakout::calibrateBno()

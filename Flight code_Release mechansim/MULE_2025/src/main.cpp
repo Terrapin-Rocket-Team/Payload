@@ -11,7 +11,6 @@ int LIGHT_THRESHOLD = 1500;  // in lx
 int VEHICLE_POWER_PIN = 41;
 
 int NICHROME_1_PIN = 37;
-int NICHROME_2_PIN = 36;
 
 const int BUZZER_PIN = 17;
 int allowedPins[] = {BUZZER_PIN};
@@ -25,10 +24,10 @@ mmfs::Sensor* mule_sensors[3] = {&barometer, &mule_imu, &light_sensor};
 
 // Initialize state
 MuleKF kf;
-MuleState MULE(mule_sensors, 3, &kf);
+MuleState MULE(mule_sensors, 3, &kf, BUZZER_PIN);
 
 // MMFS Stuff
-mmfs::Logger logger;
+mmfs::Logger logger(30, 1);
 mmfs::ErrorHandler errorHandler;
 mmfs::PSRAM *psram;
 const int UPDATE_RATE = 10;
@@ -38,6 +37,10 @@ int timeOfLastUpdate = 0;
 
 uint32_t LIGHT_THRESHOLD_TIME = 0; // in millis
 bool VEHICLE_RELEASED = false;
+
+//prototype functions
+void powerOnVehicle(int power_on_pin);
+void releaseVehicle();
 
 void setup() {
     Serial.begin(115200);
@@ -85,9 +88,9 @@ static double last = 0; // for better timing than "delay(100)"
 void loop() {
     double time = millis();
     bb.update();
-    // Update the state of the rocket
+    // Update the state of the rocket only every 100ms
     if (time - last < 100)
-        return;
+       return;
     last = time;
     
     MULE.updateState();
@@ -115,16 +118,12 @@ void powerOnVehicle(int power_on_pin) {
 }
 
 void releaseVehicle(){
-  // TODO is this function still correct?
+  // set pin 37 to high for a second
   pinMode(NICHROME_1_PIN, OUTPUT);
-  pinMode(NICHROME_2_PIN, OUTPUT);
 
   digitalWrite(NICHROME_1_PIN, HIGH);
-  delay(250);
+  delay(500);
   digitalWrite(NICHROME_1_PIN, LOW);
-  digitalWrite(NICHROME_2_PIN, HIGH);
-  delay(250);
-  digitalWrite(NICHROME_2_PIN, LOW);
 
   VEHICLE_RELEASED = true;
 }

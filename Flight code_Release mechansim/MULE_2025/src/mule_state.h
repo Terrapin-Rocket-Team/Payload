@@ -18,9 +18,10 @@ enum MuleStages {
 class MuleState : public State
 {
 public:
-    MuleState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter);
+    MuleState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, int buzzerPin);
     void updateState(double newTime = -1) override;
     int stage;
+    int buzzerPin;
 
 private:
     void determineStage();
