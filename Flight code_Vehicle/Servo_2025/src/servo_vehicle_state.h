@@ -58,11 +58,19 @@ public:
     double findDelta(double phi, double gamma);
     void goDirection(double direction);
 
+    // DataReporter functions (State override)
+    virtual const PackedType *getPackedOrder() const override;
+    virtual const int getNumPackedDataPoints() const override;
+    virtual const char **getPackedDataLabels() const override;
+
 private:
     void determineStage();
 
     double timeOfLaunch;
     double timeOfLastStage;
     double timeOfDay;
+
+    // DataReporter functions
+    virtual void packData() override;
 };
 #endif
