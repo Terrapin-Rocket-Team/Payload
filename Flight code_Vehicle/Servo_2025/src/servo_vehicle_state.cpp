@@ -2,23 +2,20 @@
 
 using namespace mmfs;
 
-const Line line1 = Line(Point(-106.922582, 32.939719), Point(-106.909264, 32.943206));
-
 Obstacle* obstacles[] = {
-    &line1
 };
 
 Point targetPoints[] = {
-        Point(-106.914875, 32.937792),
-        Point(-106.920284, 32.943033)
+        Point(-75.87514167, 39.08471667)
 };
 
-ServoVehicleState::ServoVehicleState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter) : State(sensors, numSensors, kfilter)
+ServoVehicleState::ServoVehicleState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, int buzz_pin) : State(sensors, numSensors, kfilter)
 {
     stage = PRELAUNCH;
     timeOfLaunch = 0;
     timeOfLastStage = 0;
     timeOfDay = 0;
+    buzzer_pin = buzz_pin;
 }
 
 void ServoVehicleState::updateState(double newTime)
@@ -29,7 +26,68 @@ void ServoVehicleState::updateState(double newTime)
 
 void ServoVehicleState::determineStage()
 {
-  // TODO
+  int timeSinceLaunch = currentTime - timeOfLaunch;
+    IMU *imu = reinterpret_cast<IMU *>(getSensor(IMU_));
+    Barometer *baro = reinterpret_cast<Barometer *>(getSensor(BAROMETER_));
+    //Serial.println(imu->getAccelerationGlobal().z());
+    if(stage == PRELAUNCH && imu->getAccelerationGlobal().z() > 20){
+        logger.setRecordMode(FLIGHT);
+        bb.aonoff(buzzer_pin, 200);
+        stage = BOOST;
+        timeOfLaunch = currentTime;
+        timeOfLastStage = currentTime;
+        logger.recordLogData(INFO_, "Launch detected.");
+        logger.recordLogData(INFO_, "Printing static data.");
+        for (int i = 0; i < maxNumSensors; i++)
+        {
+            if (sensorOK(sensors[i]))
+            {
+                sensors[i]->setBiasCorrectionMode(false);
+            }
+        }
+    }
+    else if(stage == BOOST && imu->getAccelerationGlobal().z() < 0){
+        bb.aonoff(buzzer_pin, 200, 2);
+        timeOfLastStage = currentTime;
+        stage = COAST;
+        logger.recordLogData(INFO_, "Coasting detected.");
+    }
+    else if(stage == COAST && baroVelocity <= 0 && timeSinceLaunch > 3){ // TODO fix this, this baroVelocity is not resistant to noise
+        bb.aonoff(buzzer_pin, 200, 2);
+        timeOfLastStage = currentTime;
+        char logData[100];
+        snprintf(logData, 100, "Apogee detected at %.2f m.", position.z());
+        logger.recordLogData(INFO_, logData);
+        stage = MAIN;
+        logger.recordLogData(INFO_, "Drogue detected.");
+    }
+    else if(stage == MAIN && ((baro->getAGLAltFt() < 100) || ((currentTime - timeOfLastStage) > 600000))){
+        bb.aonoff(buzzer_pin, 200, 2);
+        timeOfLastStage = currentTime;
+        stage = LANDED;
+        logger.setRecordMode(GROUND);
+        logger.recordLogData(INFO_, "Landing detected.");
+    }
+    else if (stage == LANDED && currentTime - timeOfLastStage > 60) // TODO check if it can dump data in 60 seconds
+    {
+        stage = DUMPED;
+        logger.recordLogData(INFO_, "Dumped data after landing.");
+    }
+    else if((stage == PRELAUNCH || stage == BOOST) && baro->getAGLAltFt() > 250){
+        logger.setRecordMode(FLIGHT);
+        bb.aonoff(buzzer_pin, 200, 2);
+        timeOfLastStage = currentTime;
+        stage = COAST;
+        logger.recordLogData(INFO_, "Launch detected. Using Backup Condition.");
+        logger.recordLogData(INFO_, "Printing static data.");
+        for (int i = 0; i < maxNumSensors; i++)
+        {
+            if (sensorOK(sensors[i]))
+            {
+                sensors[i]->setBiasCorrectionMode(false);
+            }
+        }
+    }
 }
 
 Point ServoVehicleState::getTargetCoordinates(){

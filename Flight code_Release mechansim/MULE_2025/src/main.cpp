@@ -27,10 +27,10 @@ MuleKF kf;
 MuleState MULE(mule_sensors, 3, &kf, BUZZER_PIN);
 
 // MMFS Stuff
-mmfs::Logger logger(30, 1);
+mmfs::Logger logger(15, 5);
 mmfs::ErrorHandler errorHandler;
 mmfs::PSRAM *psram;
-const int UPDATE_RATE = 10;
+const int UPDATE_RATE = 25;
 const int UPDATE_INTERVAL = 1000.0 / UPDATE_RATE;
 
 int timeOfLastUpdate = 0;
@@ -79,7 +79,7 @@ void setup() {
     logger.writeCsvHeader();
 
     logger.recordLogData(mmfs::INFO_, "Powering on Vehicle");
-    powerOnVehicle(VEHICLE_POWER_PIN);
+    //powerOnVehicle(VEHICLE_POWER_PIN);
 
     logger.recordLogData(mmfs::INFO_, "Leaving Setup");
 }
@@ -89,7 +89,7 @@ void loop() {
     double time = millis();
     bb.update();
     // Update the state of the rocket only every 100ms
-    if (time - last < 100)
+    if (time - last < UPDATE_INTERVAL) // 25 Hz
        return;
     last = time;
     
@@ -97,17 +97,13 @@ void loop() {
     logger.recordFlightData();
 
     // Release the vehicle
-    if (light_sensor.getLux() > LIGHT_THRESHOLD){
-        if (LIGHT_THRESHOLD_TIME == 0){
-            LIGHT_THRESHOLD_TIME = millis();
-        }
-        if (!VEHICLE_RELEASED){
-            if (MULE.stage == DROUGE && ((barometer.getAGLAltFt() < 1500) || (millis() - LIGHT_THRESHOLD_TIME > 3000))){ // If we are under 1500 ft or its been open for 3 seconds
-                // TODO check this condition
-                releaseVehicle();
-            }
-        }
-    }
+    // if (barometer.getAGLAltFt() < 3000){
+    //     if (!VEHICLE_RELEASED){
+    //         if (MULE.stage == DROUGE){
+    //             releaseVehicle();
+    //         }
+    //     }
+    // }
 }
 
 void powerOnVehicle(int power_on_pin) {

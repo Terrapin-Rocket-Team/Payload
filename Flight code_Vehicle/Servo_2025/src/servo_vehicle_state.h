@@ -11,9 +11,9 @@ enum ServoVehcileStages { // TODO update this
     PRELAUNCH,
     BOOST,
     COAST,
-    DROUGE,
     MAIN,
-    LANDED
+    LANDED,
+    DUMPED
 };
 
 // SOD Farm
@@ -31,10 +31,11 @@ static PWMServo leftServo;
 static PWMServo rightServo;
 
 public:
-    ServoVehicleState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter);
+    ServoVehicleState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, int buzz_pin);
     void updateState(double newTime = -1) override;
 
     int stage;
+    int buzzer_pin;
 
     bool topParachuteFlag;
     bool releasedFlag;

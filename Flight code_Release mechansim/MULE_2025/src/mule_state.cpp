@@ -23,7 +23,7 @@ void MuleState::determineStage()
     IMU *imu = reinterpret_cast<IMU *>(getSensor(IMU_));
     Barometer *baro = reinterpret_cast<Barometer *>(getSensor(BAROMETER_));
     Serial.println(imu->getAccelerationGlobal().z());
-    if(stage == PRELAUNCH && imu->getAccelerationGlobal().z() > 5){
+    if(stage == PRELAUNCH && imu->getAccelerationGlobal().z() > 20){
         logger.setRecordMode(FLIGHT);
         bb.aonoff(buzzerPin, 200);
         stage = BOOST;
@@ -64,13 +64,13 @@ void MuleState::determineStage()
         bb.aonoff(buzzerPin, 200, 2);
         timeOfLastStage = currentTime;
         stage = LANDED;
-        logger.recordLogData(INFO_, "Landing detected.");
         logger.setRecordMode(GROUND);
-        logger.recordLogData(INFO_, "Dumped data after landing.");
+        logger.recordLogData(INFO_, "Landing detected.");
     }
     else if (stage == LANDED && currentTime - timeOfLastStage > 60) // TODO check if it can dump data in 60 seconds
     {
         stage = DUMPED;
+        logger.recordLogData(INFO_, "Dumped data after landing.");
     }
     else if((stage == PRELAUNCH || stage == BOOST) && baro->getAGLAltFt() > 250){
         logger.setRecordMode(FLIGHT);

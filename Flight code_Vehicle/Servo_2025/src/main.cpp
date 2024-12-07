@@ -10,7 +10,7 @@
 double getGoalAngle(Point target, Point current);
 
 // Buzzer
-const int BUZZER_PIN = 17;
+const int BUZZER_PIN = 9;
 int allowedPins[] = {BUZZER_PIN};
 BlinkBuzz bb(allowedPins, 1, true);
 
@@ -18,29 +18,32 @@ BlinkBuzz bb(allowedPins, 1, true);
 BMP280_Breakout barometer;
 BNO055_Breakout vehicle_imu;
 MAX_M10S_Breakout gps;
-mmfs::Sensor* mule_sensors[2] = {&barometer, &vehicle_imu};
+mmfs::Sensor* servo_vehicle_sensors[3] = {&barometer, &vehicle_imu, &gps};
 
 double DEFUALT_GOAL = 0; //defined between [0,360] going ccw from north
 
 // Initialize state
 ServoVehicleKF kf;
-ServoVehicleState SERVO_VEHICLE(mule_sensors, 2, &kf);
+ServoVehicleState SERVO_VEHICLE(servo_vehicle_sensors, 3, &kf, BUZZER_PIN);
 
 // Servos
 PWMServo ServoVehicleState::leftServo; //allows for PMWServo objects to be accessed by servo functions in file
 PWMServo ServoVehicleState::rightServo; //allows for PMWServo objects to be accessed by servo functions in file
 
 // MMFS Stuff
-mmfs::Logger logger;
+mmfs::Logger logger(15, 5);
 mmfs::ErrorHandler errorHandler;
 mmfs::PSRAM *psram;
-const int UPDATE_RATE = 10;
+const int UPDATE_RATE = 25;
 const int UPDATE_INTERVAL = 1000.0 / UPDATE_RATE;
 
 int timeOfLastUpdate = 0;
 
 void setup() {
     Serial.begin(115200);
+
+    pinMode(33, OUTPUT);
+    digitalWrite(33, HIGH);
 
     // MMFS Stuff
     SENSOR_BIAS_CORRECTION_DATA_LENGTH = 2;
@@ -78,6 +81,8 @@ void setup() {
     logger.recordLogData(mmfs::INFO_, "Setting Up Servos");
     SERVO_VEHICLE.servoSetup(2, 3, 90, 90);
 
+    delay(1000);
+
     logger.recordLogData(mmfs::INFO_, "Leaving Setup");
 }
 
@@ -86,21 +91,24 @@ void loop() {
     double time = millis();
     bb.update();
     // Update the state of the rocket
-    if (time - last < 100)
+    if (time - last < UPDATE_INTERVAL)
         return;
     last = time;
+
+    Serial.println(vehicle_imu.getAccelerationGlobal().z());
     
     SERVO_VEHICLE.updateState();
     logger.recordFlightData();
 
-  // Test code for finding the correct goal angle without active gps onsite
-  //  Point targetCoords = TADPOLSTATE.getTargetCoordinates();
-  //  double goal = getGoalAngle(targetCoords, Point(-75.87600, 39.07978));
-  //  TADPOLSTATE.goDirection(goal);
-  //  Serial.println(targetCoords.x, 8);
-  //  Serial.println(targetCoords.y, 8);
-  //  Serial.println(goal);
   Point targetCoords;
+  // Test code for finding the correct goal angle without active gps onsite
+//   targetCoords = SERVO_VEHICLE.getTargetCoordinates();
+//   targetCoords = Point(-75.77514167, 39.18471667);
+//   double goal = getGoalAngle(targetCoords, Point(-75.87514167, 39.08471667));
+//   SERVO_VEHICLE.goDirection(goal);
+//   Serial.println(targetCoords.x, 8);
+//   Serial.println(targetCoords.y, 8);
+//   Serial.println(goal);
   double goalAngle = DEFUALT_GOAL;
   if (SERVO_VEHICLE.stage == MAIN) {
     if (gps.getFixQual() > 3) {
