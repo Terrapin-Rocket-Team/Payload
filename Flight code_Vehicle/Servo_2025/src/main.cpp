@@ -23,8 +23,8 @@ mmfs::Sensor* servo_vehicle_sensors[3] = {&barometer, &vehicle_imu, &gps};
 double DEFUALT_GOAL = 0; //defined between [0,360] going ccw from north
 
 // Initialize state
-ServoVehicleKF kf;
-ServoVehicleState SERVO_VEHICLE(servo_vehicle_sensors, 3, &kf, BUZZER_PIN);
+//ServoVehicleKF kf;
+ServoVehicleState SERVO_VEHICLE(servo_vehicle_sensors, 3, nullptr, BUZZER_PIN);
 
 // Servos
 PWMServo ServoVehicleState::leftServo; //allows for PMWServo objects to be accessed by servo functions in file
@@ -41,6 +41,8 @@ int timeOfLastUpdate = 0;
 
 void setup() {
     Serial.begin(115200);
+
+    if(CrashReport){Serial.println(CrashReport);}
 
     pinMode(33, OUTPUT);
     digitalWrite(33, HIGH);
@@ -96,11 +98,12 @@ void loop() {
     last = time;
 
     Serial.println(vehicle_imu.getAccelerationGlobal().z());
-    
+
     SERVO_VEHICLE.updateState();
     logger.recordFlightData();
 
   Point targetCoords;
+  Point windCorrCoords;
   // Test code for finding the correct goal angle without active gps onsite
 //   targetCoords = SERVO_VEHICLE.getTargetCoordinates();
 //   targetCoords = Point(-75.77514167, 39.18471667);
@@ -113,7 +116,8 @@ void loop() {
   if (SERVO_VEHICLE.stage == MAIN) {
     if (gps.getFixQual() > 3) {
       targetCoords = SERVO_VEHICLE.getTargetCoordinates();
-      goalAngle = getGoalAngle(targetCoords, Point(gps.getPos().y(), gps.getPos().x())); // longitude, latitude
+      windCorrCoords = SERVO_VEHICLE.getWindCorrectionCoordinates(targetCoords);
+      goalAngle = getGoalAngle(windCorrCoords, Point(gps.getPos().y(), gps.getPos().x())); // longitude, latitude
       SERVO_VEHICLE.goDirection(goalAngle);
     }
     else {
@@ -122,7 +126,7 @@ void loop() {
   }
   else if (SERVO_VEHICLE.stage == LANDED) {
     SERVO_VEHICLE.servoSetup(2, 3, 90, 90);
-  }
+  }                    
 }
 
 double getGoalAngle(Point target, Point current) {

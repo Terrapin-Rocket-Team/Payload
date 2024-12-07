@@ -97,13 +97,13 @@ void loop() {
     logger.recordFlightData();
 
     // Release the vehicle
-    // if (barometer.getAGLAltFt() < 3000){
-    //     if (!VEHICLE_RELEASED){
-    //         if (MULE.stage == DROUGE){
-    //             releaseVehicle();
-    //         }
-    //     }
-    // }
+    if (barometer.getAGLAltFt() < 3000){
+        if (!VEHICLE_RELEASED){
+            if (MULE.stage == DROUGE){
+                releaseVehicle();
+            }
+        }
+    }
 }
 
 void powerOnVehicle(int power_on_pin) {

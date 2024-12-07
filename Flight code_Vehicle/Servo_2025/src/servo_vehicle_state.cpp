@@ -30,7 +30,7 @@ void ServoVehicleState::determineStage()
     IMU *imu = reinterpret_cast<IMU *>(getSensor(IMU_));
     Barometer *baro = reinterpret_cast<Barometer *>(getSensor(BAROMETER_));
     //Serial.println(imu->getAccelerationGlobal().z());
-    if(stage == PRELAUNCH && imu->getAccelerationGlobal().z() > 20){
+    if(stage == PRELAUNCH && imu->getAccelerationGlobal().z() > 10){
         logger.setRecordMode(FLIGHT);
         bb.aonoff(buzzer_pin, 200);
         stage = BOOST;
@@ -127,14 +127,19 @@ Point ServoVehicleState::getTargetCoordinates(){
 
   // determines the best point to go to
   Point closestSafePoint = closest(current, safes, numTarg);
-  if (closestSafePoint != Point(0.0, 0.0))
+  if (closestSafePoint != Point(0.0, 0.0)){
+      targetCoords = closestSafePoint;
       return closestSafePoint;
+  }
   
   Point closestValidPoint = closest(current, valids, numTarg);
-  if (closestValidPoint != Point(0.0, 0.0))
+  if (closestValidPoint != Point(0.0, 0.0)){
+      targetCoords = closestValidPoint;
       return closestValidPoint;
+  } 
 
   Point closestPoint = closest(current, targetPoints, numTarg);
+  targetCoords = closestPoint;
   return closestPoint;
 }
 
@@ -221,8 +226,8 @@ const int ServoVehicleState::getNumPackedDataPoints() const { return 21; }
 
 const PackedType *ServoVehicleState::getPackedOrder() const
 {
-    static const PackedType order[21] = {
-        FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, BOOL, BOOL, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE, DOUBLE};
+    static const PackedType order[] = {
+        FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT};
     return order;
 }
 
@@ -239,89 +244,45 @@ const char **ServoVehicleState::getPackedDataLabels() const
         "AX (m/s/s)",
         "AY (m/s/s)",
         "AZ (m/s/s)",
-        "topParachuteFlag",
-        "releasedFlag",
         "left_servo_value",
         "right_servo_value",
         "GX",
         "GY",
         "WX",
-        "WY"
+        "WY",
         "vehicleSpeed",
         "averageWindCorrectionCoords_X",
-        "averageWindCorrectionCoords_Y"
+        "averageWindCorrectionCoords_Y",
+        "targetCoords_X",
+        "targetCoords_Y"
         };
     return labels;
 }
 
 void ServoVehicleState::packData()
 {
-    float t = currentTime;
-    float px = position.x();
-    float py = position.y();
-    float pz = position.z();
-    float vx = velocity.x();
-    float vy = velocity.y();
-    float vz = velocity.z();
-    float ax = acceleration.x();
-    float ay = acceleration.y();
-    float az = acceleration.z();
 
-    // Payload specific data
-    bool chuteFlag = topParachuteFlag;
-    bool didRelease = releasedFlag;
-    double leftServoVal = left_servo_value;
-    double rightServoVal = right_servo_value;
-    double gx = g.x();
-    double gy = g.y();
-    double wx = w.x();
-    double wy = w.y();
-    double vehicleSpeed = v_s;
-    double averageWindCorrectionCoords_X = averageWindCorrectionCoords.x;
-    double averageWindCorrectionCoords_Y = averageWindCorrectionCoords.y;
-    
-
-    int cursor = 0;
-    memcpy(packedData + cursor, &t, sizeof(float));
-    cursor += sizeof(float);
-    memcpy(packedData + cursor, &px, sizeof(float));
-    cursor += sizeof(float);
-    memcpy(packedData + cursor, &py, sizeof(float));
-    cursor += sizeof(float);
-    memcpy(packedData + cursor, &pz, sizeof(float));
-    cursor += sizeof(float);
-    memcpy(packedData + cursor, &vx, sizeof(float));
-    cursor += sizeof(float);
-    memcpy(packedData + cursor, &vy, sizeof(float));
-    cursor += sizeof(float);
-    memcpy(packedData + cursor, &vz, sizeof(float));
-    cursor += sizeof(float);
-    memcpy(packedData + cursor, &ax, sizeof(float));
-    cursor += sizeof(float);
-    memcpy(packedData + cursor, &ay, sizeof(float));
-    cursor += sizeof(float);
-    memcpy(packedData + cursor, &az, sizeof(float));
-    cursor += sizeof(float);
-    memcpy(packedData + cursor, &chuteFlag, sizeof(bool));
-    cursor += sizeof(bool);
-    memcpy(packedData + cursor, &didRelease, sizeof(bool));
-    cursor += sizeof(bool);
-    memcpy(packedData + cursor, &leftServoVal, sizeof(double));
-    cursor += sizeof(double);
-    memcpy(packedData + cursor, &rightServoVal, sizeof(double));
-    cursor += sizeof(double);
-    memcpy(packedData + cursor, &gx, sizeof(double));
-    cursor += sizeof(double);
-    memcpy(packedData + cursor, &gy, sizeof(double));
-    cursor += sizeof(double);
-    memcpy(packedData + cursor, &wx, sizeof(double));
-    cursor += sizeof(double);
-    memcpy(packedData + cursor, &wy, sizeof(double));
-    cursor += sizeof(double);
-    memcpy(packedData + cursor, &vehicleSpeed, sizeof(double));
-    cursor += sizeof(double);
-    memcpy(packedData + cursor, &averageWindCorrectionCoords_X, sizeof(double));
-    cursor += sizeof(double);
-    memcpy(packedData + cursor, &averageWindCorrectionCoords_Y, sizeof(double));
-    cursor += sizeof(double);
+    struct PackedData data;
+    data.t = currentTime;
+    data.px = position.x();;
+    data.py = position.y();;
+    data.pz = position.z();;
+    data.vx = velocity.x();;
+    data.vy = velocity.y();;
+    data.vz = velocity.z();;
+    data.ax = acceleration.x();;
+    data.ay = acceleration.y();;
+    data.az = acceleration.z();;
+    data.leftServoVal = left_servo_value;
+    data.rightServoVal = right_servo_value;
+    data.gx = g.x();
+    data.gy = g.y();
+    data.wx = w.x();
+    data.wy = w.y();
+    data.vehicleSpeed = v_s;
+    data.averageWindCorrectionCoords_X = averageWindCorrectionCoords.x;
+    data.averageWindCorrectionCoords_Y = averageWindCorrectionCoords.y;
+    data.targetCoords_X = targetCoords.x;
+    data.targetCoords_Y = targetCoords.y;
+    memcpy(packedData, &data, sizeof(PackedData));
 }

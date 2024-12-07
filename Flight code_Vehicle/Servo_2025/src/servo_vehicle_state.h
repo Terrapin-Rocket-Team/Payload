@@ -17,8 +17,8 @@ enum ServoVehcileStages { // TODO update this
 };
 
 // SOD Farm
-const int numTarg = 2;
-const int numObs = 1;
+const int numTarg = 1;
+const int numObs = 0;
 
 extern const Line line1;
 extern Obstacle* obstacles[];
@@ -26,6 +26,32 @@ extern Point targetPoints[];
 
 class ServoVehicleState : public State
 {
+
+    struct PackedData
+    {
+        float t;
+        float px;
+        float py;
+        float pz;
+        float vx;
+        float vy;
+        float vz;
+        float ax;
+        float ay;
+        float az;
+        // Payload specific data
+        float leftServoVal;
+        float rightServoVal;
+        float gx;
+        float gy;
+        float wx;
+        float wy;
+        float vehicleSpeed;
+        float averageWindCorrectionCoords_X;
+        float averageWindCorrectionCoords_Y;
+        float targetCoords_X;
+        float targetCoords_Y;
+    } __attribute__((packed));
 
 static PWMServo leftServo;
 static PWMServo rightServo;
@@ -47,6 +73,8 @@ public:
     imu::Vector<2> w; // wind speed in m/s (2D velocity vector)
     double v_s = 1.6; // vehicle speed in m/s from https://docs.google.com/document/d/1qh7_YLZrvnW2anWGSmRbWwFUWjS0ocPswoAIC7827A4/edit
     Point averageWindCorrectionCoords;
+
+    Point targetCoords;
 
     void determineTADPOLStage();
     Point getTargetCoordinates();
@@ -71,6 +99,6 @@ private:
     double timeOfDay;
 
     // DataReporter functions
-    virtual void packData() override;
+   virtual void packData() override;
 };
 #endif
