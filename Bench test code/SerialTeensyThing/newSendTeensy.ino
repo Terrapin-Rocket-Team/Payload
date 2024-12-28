@@ -1,6 +1,6 @@
 void setup() {
-  Serial.begin(9600);
-  Serial1.begin(9600);
+  Serial.begin(115200);
+  Serial1.begin(115200);
   Serial.println("I am sender teensy");
 }
 
@@ -8,17 +8,20 @@ void loop() {
   //Serial1.write("Hello receiverTeensy");
   String message = "Hello receiverTeensy";
   // creating a char[] to write back
-    int length = message.length();
+    int length = message.length() + 1;
     char str[length];
     for (int i = 0; i < length; i++) {
       str[i] = message.charAt(i);
     }
+    str[message.length()] = '\n';
+    
     Serial1.write(str, length);
-
+  Serial1.end(); 
+  Serial1.begin(115200);
   //does nothing until data is detected
   while (Serial1.available() == 0) {
     Serial.println("Waiting for data");
-    delay(1000);
+    delay(500);
   }
   readAndSpit();
 }
@@ -31,4 +34,5 @@ void readAndSpit() {
     Serial.print("Message from SenderTeensy: ");
     Serial.println(message);
   }
+  delay(500);
 }
