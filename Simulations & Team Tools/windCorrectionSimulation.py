@@ -10,40 +10,48 @@ import random as rand
 
 mass=1 #kg
 t=0 #s
-tStep=0.005 #s
+tStep=0.01 #s
 
-vSpeed=2
-vsError=0.8
-pos=[0,0]
-target=[0,5]
-windEst=[0,0]
-windAct=[.3,0]
+numSims=6
+
+vs=6
+vsAct=[vs/2,vs/1.5,vs,vs*1.5,vs*2,vs]
+target=[0,10]
+
+windMax=vsAct[0]*0.9
+windMin=0
+windAct=[windMax,0]
 windVariationSpeed=0.1
+weightFactor=.5
 
-position=[0,0]
-windx=[]
-windy=[]
-times=[]
+
+
+windEst=[]
+windEstX=[]
+windEstY=[]
+windx=[0]
+windy=[0]
+times=[0]
 headings=[]
-xs=[0]
-ys=[0]
-vxs=[]
-vys=[]
-posPrev=[0,0]
-g=[0,0]
+x=[]
+y=[]
+vx=[]
+vy=[]
 
-weightFactor=1
-
-#Dumb state values (no wind correction)
-d_position=[0,0]
-d_xs=[0]
-d_ys=[0]
-d_vxs=[]
-d_vys=[]
-d_posPrev=[0,0]
+for i in range(numSims):
+	windEst.append([0,0])
+	windEstX.append([0])
+	windEstY.append([0])
+	headings.append([0])
+	x.append([0])
+	y.append([0])
+	vx.append([0])
+	vy.append([0])
 
 
-while t<5:
+
+
+while t<10:
 
 	#Update time
 	t+=tStep
@@ -51,67 +59,85 @@ while t<5:
 
 	#Update wind
 	windAct[0]+=windVariationSpeed*(2*rand.random()-1)
-	windAct[1]+=windVariationSpeed*(2*rand.random()-1)
+	if abs(windAct[0])>windMax:
+		windAct[0]=windMax*windAct[0]/abs(windAct[0])
+	#windAct[1]+=windVariationSpeed*(2*rand.random()-1)
+	#if abs(windAct[1])>windMax:
+	#	windAct[1]=windMax*windAct[1]/abs(windAct[1])
 	windx.append(windAct[0])
 	windy.append(windAct[1])
 
-	#Calculate heading vector for smart system
-	h=[target[0]-position[0],target[1]-position[1]]
-	hMag=(h[0]**2+h[1]**2)**0.5
-	h=[h[0]/hMag,h[1]/hMag]
+	for i in range(numSims):
 
-	#Calculate heading angle for dumb system
-	d_heading=math.atan2(target[1]-d_position[1],target[0]-d_position[0])
-
-	#Determine wp using estimated wind vector 
-	wpconst=((windEst[0]*h[0]+windEst[1]*h[1])/(h[0]**2+h[1]**2))
-	wp=[h[0]*wpconst,h[1]*wpconst]
-
-	#Determine from wp and wind estimate
-	wc=[windEst[0]-wp[0],windEst[1]-wp[1]]
-
-	#Create g based on wind strength
-	if (windEst[0]**2+windEst[1]**2) < vSpeed**2:
-		hPrimeMag=(vSpeed**2-(wc[0]**2+wc[1]**2))**0.5
-		g[0]=h[0]*hPrimeMag-wc[0]
-		g[1]=h[1]*hPrimeMag-wc[1]
-	else: #This is primarily a saftey thing, not much control theory behind it
-		g=[-windEst[0],-windEst[1]]
+		if i<(numSims-1):
+			#Calculate heading vector for smart system
+			h=[target[0]-x[i][-1],target[1]-y[i][-1]]
+			hMag=(h[0]**2+h[1]**2)**0.5
+			h=[h[0]/hMag,h[1]/hMag]
 
 
-	#Calculate heading angle from g
-	heading=math.atan2(g[1],g[0])
+			#Determine wp using estimated wind vector 
+			wpconst=((windEst[i][0]*h[0]+windEst[i][1]*h[1])/(h[0]**2+h[1]**2))
+			wp=[h[0]*wpconst,h[1]*wpconst]
 
-	#Update velocities
-	velocity=[windAct[0]+vsError*vSpeed*math.cos(heading),windAct[1]+vsError*vSpeed*math.sin(heading)]
-	d_velocity=[windAct[0]+vsError*vSpeed*math.cos(d_heading),windAct[1]+vsError*vSpeed*math.sin(d_heading)]
+			#Determine from wp and wind estimate
+			wc=[windEst[i][0]-wp[0],windEst[i][1]-wp[1]]
 
-	#Update positions
-	posPrev=position.copy()
-	position[0]+=velocity[0]*tStep
-	position[1]+=velocity[1]*tStep
-	d_position[0]+=d_velocity[0]*tStep
-	d_position[1]+=d_velocity[1]*tStep
+			#Create g based on wind strength
+			if (windEst[i][0]**2+windEst[i][1]**2) < vs**2:
+				hPrimeMag=(vs**2-(wc[0]**2+wc[1]**2))**0.5
+				g=[h[0]*hPrimeMag-wc[0],h[1]*hPrimeMag-wc[1]]
+			else: #This is primarily a saftey thing, not much control theory behind it
+				g=[-windEst[i][0],-windEst[i][1]]
 
-	#Save values to arrays
-	xs.append(position[0])
-	ys.append(position[1])
-	vxs.append(velocity[0])
-	vys.append(velocity[1])
-	d_xs.append(d_position[0])
-	d_ys.append(d_position[1])
-	d_vxs.append(d_velocity[0])
-	d_vys.append(d_velocity[1])
-	
-	#Update the wind estimate using 
-	newWindEst=[((position[0]-posPrev[0])/tStep)-vSpeed*math.cos(heading),((position[1]-posPrev[1])/tStep)-vSpeed*math.sin(heading)]
-	windEst=[(1-weightFactor)*windEst[0]+weightFactor*newWindEst[0],(1-weightFactor)*windEst[1]+weightFactor*newWindEst[1]]
-	
+
+			#Calculate heading angle from g
+			heading=math.atan2(g[1],g[0])
+
+		else:
+			h=[target[0]-x[i][-1],target[1]-y[i][-1]]
+			heading=math.atan2(h[1],h[0])
+
+		headings[i].append(heading)
+
+		#Update velocities
+		vx[i].append(windAct[0]+vsAct[i]*math.cos(heading))
+		vy[i].append(windAct[1]+vsAct[i]*math.sin(heading))
+
+		#Update positions
+		x[i].append(x[i][-1]+vx[i][-1]*tStep)
+		y[i].append(y[i][-1]+vy[i][-1]*tStep)
+
+		if i<(numSims-1):
+			#Update the wind estimate using 
+			newWindEst=[((x[i][-1]-x[i][-2])/tStep)-vs*math.cos(heading),((y[i][-1]-y[i][-2])/tStep)-vs*math.sin(heading)]
+			windEst[i]=[(1-weightFactor)*windEst[i][0]+weightFactor*newWindEst[0],(1-weightFactor)*windEst[i][1]+weightFactor*newWindEst[1]]
+			windEstX[i].append(windEst[i][0])
+			windEstY[i].append(windEst[i][1])
+		
 
 
 
 #Plot wind canceling and dumb trajectories
-plt.plot(xs,ys, ls="-", color='red')
-plt.plot(d_xs,d_ys, ls=":", color='blue')
-#plt.plot(times,velocities, ls=":", color='blue')
+plt.figure()
+for i in range(numSims-1):
+	plt.plot(x[i],y[i], ls=":",label='A/E: '+str(round(vsAct[i]/vs,2)))
+plt.plot(x[-1],y[-1], ls=":",label='No wind correction')
+plt.legend(loc=4)
+
+
+plt.figure()
+plt.subplot(2, 1, 1)
+#for i in range(numSims-1):
+#	plt.plot(times,windEstX[i], ls=":",label='A/E: '+str(round(vsAct[i]/vs,2)))
+plt.plot(times,windx, ls=":",label='Wind')
+plt.legend()
+
+plt.subplot(2, 1, 2)
+#for i in range(numSims-1):
+#	plt.plot(times,windEstY[i], ls=":",label='A/E: '+str(round(vsAct[i]/vs,2)))
+plt.plot(times,windy, ls=":",label='Wind')
+plt.legend()
+
+
 plt.show()
