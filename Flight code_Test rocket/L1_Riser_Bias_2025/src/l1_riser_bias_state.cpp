@@ -13,7 +13,7 @@ const Point targetPoints[] = {
         Point(-106.920284, 32.943033)
 };
 
-L1RiserBiasState::L1RiserBiasState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, bool stateRecordsOwnData) : State(sensors, numSensors, kfilter, stateRecordsOwnData)
+L1RiserBiasState::L1RiserBiasState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter) : State(sensors, numSensors, kfilter)
 {
     stage = PRELAUNCH;
     timeOfLaunch = 0;
@@ -49,17 +49,6 @@ void L1RiserBiasState::determineStage() // TODO Change this for the tail rotor
         timeOfLaunch = currentTime;
         timeOfLastStage = currentTime;
         logger.recordLogData(INFO_, "Launch detected.");
-        logger.recordLogData(INFO_, "Printing static data.");
-        for (int i = 0; i < maxNumSensors; i++)
-        {
-            if (sensorOK(sensors[i]))
-            {
-                char logData[200];
-                snprintf(logData, 200, "%s: %s", sensors[i]->getName(), sensors[i]->getStaticDataString());
-                logger.recordLogData(INFO_, logData);
-                sensors[i]->setBiasCorrectionMode(false);
-            }
-        }
     }
     else if (stage == BOOST && abs(acceleration.z()) < 10)
     {
@@ -151,7 +140,7 @@ double L1RiserBiasState::findPWM(double goal, double timeSinceLastIteration){
   IMU *imu = reinterpret_cast<IMU *>(getSensor(IMU_));
 
   //Vector<3> ori = stateIMU.absoluteOrientationEuler;
-  Vector<3> ori = imu->getGyroReading(); // TODO this is obivously wrong, see the line above
+  Vector<3> ori = imu->getOrientation().toEuler(); // TODO this is obivously wrong, see the line above
   double roll = ori.x();
   double pitch = ori.y();
   double yaw = ori.z(); //body frame from Inertial frame angle (psi)
@@ -162,7 +151,7 @@ double L1RiserBiasState::findPWM(double goal, double timeSinceLastIteration){
   else if(Ep <= -180){Ep = 360 + Ep;}
 
   // Ed Angular Velocity Method
-  Vector<3> angularVelocity = imu->getGyroReading();
+  Vector<3> angularVelocity = imu->getAngularVelocity();
   double Ed = -angularVelocity.z(); // TODO does this need to be inertial ang velo?
 
   //Find PWM

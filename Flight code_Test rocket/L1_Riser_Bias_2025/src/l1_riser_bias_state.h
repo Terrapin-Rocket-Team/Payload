@@ -26,7 +26,7 @@ extern const Point targetPoints[];
 class L1RiserBiasState : public State
 {
 public:
-    L1RiserBiasState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, bool stateRecordsOwnData = true);
+    L1RiserBiasState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter);
     void updateState(double newTime = -1) override;
     int buzzerPin;
 
