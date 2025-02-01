@@ -2,18 +2,26 @@
 
 using namespace mmfs;
 
-const Line line1 = Line(Point(-106.922582, 32.939719), Point(-106.909264, 32.943206));
+/// Navigation Stuff ///
+// Higgs	
+const Line line1 = Line(Point(-75.87439444, 39.079425), Point(-75.87331111, 39.08091111));
+const Line line2 = Line(Point(-75.87320833, 39.07993889), Point(-75.871675, 39.07527778));
+const Line line3 = Line(Point(-75.87404444, 39.08616667), Point(-75.87263056, 39.08143889));
 
-Obstacle* obstacles[] = {
-    &line1
+Obstacle* obstacles[numObs] = {
+    &line1,
+    &line2,
+    &line3
 };
 
-const Point targetPoints[] = {
-        Point(-106.914875, 32.937792),
-        Point(-106.920284, 32.943033)
+const Point targetPoints[numTarg] = {
+        Point(-75.87514167, 39.08471667),
+        Point(-75.87820833, 39.077525),
+        Point(-75.87034444, 39.08389722),
 };
+/////////////////
 
-TailRotorState::TailRotorState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, int BuzzerPin, bool stateRecordsOwnData) : State(sensors, numSensors, kfilter, stateRecordsOwnData)
+TailRotorState::TailRotorState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, int BuzzerPin) : State(sensors, numSensors, kfilter)
 {
     stage = PRELAUNCH;
     timeOfLaunch = 0;
@@ -67,7 +75,7 @@ void TailRotorState::determineStage() // TODO Change this for the tail rotor
         stage = DROUGE;
         logger.recordLogData(INFO_, "Drogue conditions detected.");
     }
-    else if (stage == DROUGE && baro->getAGLAltFt() < 1000 && timeSinceLaunch > 10)
+    else if (stage == DROUGE && baro->getAGLAltFt() < 3000 && timeSinceLaunch > 10)
     {
         bb.aonoff(buzzerPin, 200, 4);
         stage = RELEASED;
@@ -88,15 +96,6 @@ void TailRotorState::determineStage() // TODO Change this for the tail rotor
         stage = PRELAUNCH;
     }
 }
-
-void TailRotorState::fanSetup(int servoPin){
-  motor.attach(servoPin, 1000, 2000);
-}
-
-void TailRotorState::runFan(int pwm){
-  motor.writeMicroseconds(pwm);
-}
-
 
 int TailRotorState::findPWM(float goal, float deltaTime){
   //Input goal is angle to position [-180:180] off the y-axis (CCW +)
@@ -227,4 +226,71 @@ float TailRotorState::getGoalAngle(Point target) {
     goal -= 360;
   }
   return goal;
+}
+
+const int TailRotorState::getNumPackedDataPoints() const { return 22; }
+
+const PackedType *TailRotorState::getPackedOrder() const
+{
+    static const PackedType order[22] = {
+        FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, INT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT};
+    return order;
+}
+
+const char **TailRotorState::getPackedDataLabels() const
+{
+    static const char *labels[22] = {
+        "Time (s)",
+        "PX (m)",
+        "PY (m)",
+        "PZ (m)",
+        "VX (m/s)",
+        "VY (m/s)",
+        "VZ (m/s)",
+        "AX (m/s/s)",
+        "AY (m/s/s)",
+        "AZ (m/s/s)",
+        "pwm",
+        "goalAngleUsed",
+        "goalAngleCalculated",
+        "GX",
+        "GY",
+        "WX",
+        "WY",
+        "vehicleSpeed",
+        "averageWindCorrectionCoords_X",
+        "averageWindCorrectionCoords_Y",
+        "targetCoords_X",
+        "targetCoords_Y"
+        };
+    return labels;
+}
+
+void TailRotorState::packData()
+{
+
+    struct PackedData data;
+    data.t = currentTime;
+    data.px = position.x();
+    data.py = position.y();
+    data.pz = position.z();
+    data.vx = velocity.x();
+    data.vy = velocity.y();
+    data.vz = velocity.z();
+    data.ax = acceleration.x();
+    data.ay = acceleration.y();
+    data.az = acceleration.z();
+    data.pwm = pwm;
+    data.goalAngleUsed = goalAngleUsed;
+    data.goalAngleCalculated = goalAngleCalculated;
+    data.gx = g.x();
+    data.gy = g.y();
+    data.wx = w.x();
+    data.wy = w.y();
+    data.vehicleSpeed = v_s;
+    data.averageWindCorrectionCoords_X = averageWindCorrectionCoords.x;
+    data.averageWindCorrectionCoords_Y = averageWindCorrectionCoords.y;
+    data.targetCoords_X = targetCoords.x;
+    data.targetCoords_Y = targetCoords.y;
+    memcpy(packedData, &data, sizeof(PackedData));
 }

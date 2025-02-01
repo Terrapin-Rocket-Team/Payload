@@ -2,11 +2,7 @@
 #define TAIL_ROTOR_STATE_H
 
 #include "MMFS.h"
-#include "bmp280_breakout.h"
-#include "bno055_breakout.h"
-#include "max_m10s_breakout.h"
 #include "Target.h"
-#include <Servo.h>
 
 enum TailRotorStages {
     PRELAUNCH,
@@ -17,21 +13,47 @@ enum TailRotorStages {
     LANDED
 };
 
-// Tail Rotor Stuff
-Servo motor;
-
-// SOD Farm
-const int numTarg = 2;
-const int numObs = 1;
+/// Navigation Stuff ///
+// Higgs Farm
+const int numTarg = 3;
+const int numObs = 3;
 
 extern const Line line1;
-extern Obstacle* obstacles[];
-extern const Point targetPoints[];
+extern Obstacle* obstacles[numTarg];
+extern const Point targetPoints[numObs];
+/////////////////
 
 class TailRotorState : public mmfs::State
 {
+    struct PackedData
+    {
+        float t;
+        float px;
+        float py;
+        float pz;
+        float vx;
+        float vy;
+        float vz;
+        float ax;
+        float ay;
+        float az;
+        // Payload specific data
+        int pwm;
+        float goalAngleUsed;
+        float goalAngleCalculated;
+        float gx;
+        float gy;
+        float wx;
+        float wy;
+        float vehicleSpeed;
+        float averageWindCorrectionCoords_X;
+        float averageWindCorrectionCoords_Y;
+        float targetCoords_X;
+        float targetCoords_Y;
+    } __attribute__((packed));
+
 public:
-    TailRotorState(mmfs::Sensor **sensors, int numSensors, mmfs::LinearKalmanFilter *kfilter, int BuzzerPin, bool stateRecordsOwnData = true);
+    TailRotorState(mmfs::Sensor **sensors, int numSensors, mmfs::LinearKalmanFilter *kfilter, int BuzzerPin);
     void updateState(double newTime = -1) override;
     int buzzerPin;
     int stage;
@@ -43,11 +65,6 @@ public:
     float kd = .4; //Derivative error constant -- MANUAL INPUT TODO
     float directionalCorrection = 0.8; // Correction for prop inefficiency
     float previousError = 0.0;
-    // float pwmScale=1.3; // TOOD
-    // int pwmChangeSignDelay = 5; //in ms
-    // float pwmZeroAngleCone = 5; //in degrees, the +/- angle which creates a cone around Ep setting it to 0 if within the range
-    // double pwmTimer = 0.0; //in ms
-    // double pwmFrequency = 250; //in ms TODO set this
 
     imu::Vector<2> g; // wind speed in m/s (2D velocity vector) bad comment
     imu::Vector<2> w; // wind speed in m/s (2D velocity vector)
@@ -55,12 +72,22 @@ public:
     Point averageWindCorrectionCoords;
 
     void determineTADPOLStage();
-    void fanSetup(int servoPin);
-    void runFan(int pwm);
     int findPWM(float goal, float deltaTime);
     Point getTargetCoordinates();
     Point getWindCorrectionCoordinates(Point r);
     float getGoalAngle(Point target);
+
+    // DataReporter functions (State override)
+    virtual const mmfs::PackedType *getPackedOrder() const override;
+    virtual const int getNumPackedDataPoints() const override;
+    virtual const char **getPackedDataLabels() const override;
+    virtual void packData() override;
+
+    // For pakcing data
+    int pwm;
+    float goalAngleUsed;
+    float goalAngleCalculated;
+    Point targetCoords;
 
 private:
     void determineStage();

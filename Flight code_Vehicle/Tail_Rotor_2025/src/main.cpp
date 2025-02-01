@@ -2,16 +2,20 @@
 #include <MMFS.h>
 #include "tail_rotor_kf.h"
 #include "tail_rotor_state.h"
+#include "bmp280_breakout.h"
+#include "bno055_breakout.h"
+#include "max_m10s_breakout.h"
+#include <Servo.h>
 
 // Buzzer
-const int BUZZER_PIN = 33; // TODO update this to whats actually on the board
+const int BUZZER_PIN = 9; // TODO update this to whats actually on the board
 int allowedPins[] = {BUZZER_PIN};
 BlinkBuzz bb(allowedPins, 1, true);
 
 // Sensors
-BMP280_Breakout barometer;
-BNO055_Breakout vehicle_imu;
-MAX_M10S_Breakout gps;
+mmfs::BMP280_Breakout barometer;
+mmfs::BNO055_Breakout vehicle_imu;
+mmfs::MAX_M10S_Breakout gps;
 mmfs::Sensor* tail_rotor_sensors[3] = {&barometer, &vehicle_imu, &gps};
 
 // Initialize Tail Rotor State
@@ -26,10 +30,11 @@ const int UPDATE_RATE = 10;
 const int UPDATE_INTERVAL = 1000.0 / UPDATE_RATE;
 
 // Navigation Stuff
-double DEFUALT_GOAL = 0; //defined between [0,360] going ccw from north
+double DEFUALT_GOAL = 0; //defined [-180:180] off the y-axis (CCW +)
 
 // Tail Rotor Stuff
 int SERVO_PIN = 3;
+Servo motor;
 
 void setup() {
 
@@ -72,13 +77,17 @@ void setup() {
     }
 
     // Setup Fan
-    TailRotor.fanSetup(SERVO_PIN);
+    motor.attach(SERVO_PIN, 1000, 2000);
 
     logger.writeCsvHeader();
     logger.recordLogData(mmfs::INFO_, "Leaving Setup");
 }
 
 static unsigned long lastUpdateTime = 0;
+float goalAngle = 0;
+Point targetCoords;
+Point windCorrCoords;
+int pwm;
 void loop() {
     //Do this as often as possible for best results
     bb.update();
@@ -101,15 +110,13 @@ void loop() {
         gps.setBiasCorrectionMode(true);
     }
 
-
-    double goalAngle = DEFUALT_GOAL;
-    Point targetCoords;
-    Point windCorrCoords;
+    
 
     /// Ground Test Code ///
     // currentCoords = Point(-75.87514167, 39.08471667);
     // targetCoords = Point(-75.77514167, 39.18471667);
-    // double goal = getGoalAngle(targetCoords, currentCoords);
+    // float goalAngle = getGoalAngle(targetCoords, currentCoords);
+    // float goalAngle = 0;
     // int pwm = TailRotor.findPWM(goalAngle, (millis() - lastUpdateTime)/1000);
     // TailRotor.runFan(pwm);
     // Serial.printf("Goal: %.2f\n", goal)
@@ -119,19 +126,35 @@ void loop() {
     /// Flight Code ///
     if (TailRotor.stage == RELEASED) {
         if (gps.getFixQual() > 3) {
+
+            // Running but not using
             targetCoords = TailRotor.getTargetCoordinates();
             windCorrCoords = TailRotor.getWindCorrectionCoordinates(targetCoords);
             goalAngle = TailRotor.getGoalAngle(windCorrCoords);
-            int pwm = TailRotor.findPWM(goalAngle, (millis() - lastUpdateTime)/1000);
-            TailRotor.runFan(pwm);
+            TailRotor.goalAngleCalculated = goalAngle;
+
+
+            if (barometer.getAGLAltFt() < 500){
+                goalAngle = 180; // go south
+            } else if (barometer.getAGLAltFt() < 1000){
+                goalAngle = 0; // go north
+            } else if (barometer.getAGLAltFt() < 1500){
+                goalAngle = 180; // go south
+            } else if (barometer.getAGLAltFt() < 2000){
+                goalAngle = 0; // go north
+            }
+            pwm = TailRotor.findPWM(goalAngle, (millis() - lastUpdateTime)/1000);
+            motor.writeMicroseconds(pwm);
         } else {
-            int pwm = TailRotor.findPWM(DEFUALT_GOAL, (millis() - lastUpdateTime)/1000);
-            TailRotor.runFan(pwm);
+            pwm = TailRotor.findPWM(DEFUALT_GOAL, (millis() - lastUpdateTime)/1000);
+            motor.writeMicroseconds(pwm);
         }
     } else if (TailRotor.stage == LANDED) {
-        // Turn off the motor TODO check with cooper
-        motor.writeMicroseconds(1500);
+        pwm = 1500;
+        motor.writeMicroseconds(pwm);
     }
+    TailRotor.goalAngleUsed = goalAngle;
+    TailRotor.pwm = pwm;
     //////////////////////
 
 }
