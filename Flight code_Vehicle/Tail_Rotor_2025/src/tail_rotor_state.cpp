@@ -42,25 +42,14 @@ void TailRotorState::determineStage() // TODO Change this for the tail rotor
     // barometer is ok AND the relative altitude is greater than 30 ft OR baro is not ok
     // essentially, if we have either sensor and they meet launch threshold, launch. Otherwise, it will never detect a launch.
     {
-        bb.aonoff(buzzerPin, 200);
+        bb.aonoff(buzzerPin, 200, 2);
         logger.setRecordMode(FLIGHT);
         stage = BOOST;
         timeOfLaunch = currentTime;
         timeOfLastStage = currentTime;
         logger.recordLogData(INFO_, "Launch detected.");
-        logger.recordLogData(INFO_, "Printing static data.");
-        for (int i = 0; i < maxNumSensors; i++)
-        {
-            if (sensorOK(sensors[i]))
-            {
-                char logData[200];
-                snprintf(logData, 200, "%s: %s", sensors[i]->getName(), sensors[i]->getStaticDataString());
-                logger.recordLogData(INFO_, logData);
-                sensors[i]->setBiasCorrectionMode(false);
-            }
-        }
     }
-    else if (stage == BOOST && abs(acceleration.z()) < 10)
+    else if (stage == BOOST && imu->getAccelerationGlobal().z() < 0)
     {
         bb.aonoff(buzzerPin, 200, 2);
         timeOfLastStage = currentTime;
@@ -80,21 +69,22 @@ void TailRotorState::determineStage() // TODO Change this for the tail rotor
     else if (stage == DROUGE && baro->getAGLAltFt() < 1000 && timeSinceLaunch > 10)
     {
         bb.aonoff(buzzerPin, 200, 4);
-        stage = MAIN;
+        stage = RELEASED;
         timeOfLastStage = currentTime;
         logger.recordLogData(INFO_, "Main parachute conditions detected.");
     }
-    else if (stage == MAIN && baroVelocity > -1 && baro->getAGLAltFt() < 66 && timeSinceLaunch > 15)
+    else if (stage == RELEASED && ((baro->getAGLAltFt() < 100) || ((currentTime - timeOfLastStage) > 600000)))
     {
         bb.aonoff(buzzerPin, 200, 5);
         timeOfLastStage = currentTime;
         stage = LANDED;
-        logger.recordLogData(INFO_, "Landing detected. Waiting for 5 seconds to dump data.");
+        logger.recordLogData(INFO_, "Landing detected. Waiting for 30 seconds to dump data.");
     }
-    else if (stage == LANDED && currentTime - timeOfLastStage > 5)
+    else if (stage == LANDED && currentTime - timeOfLastStage > 30)
     {
         logger.setRecordMode(GROUND);
         logger.recordLogData(INFO_, "Dumped data after landing.");
+        stage = PRELAUNCH;
     }
 }
 

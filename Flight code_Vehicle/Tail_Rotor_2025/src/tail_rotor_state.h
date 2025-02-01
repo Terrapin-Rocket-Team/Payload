@@ -2,6 +2,9 @@
 #define TAIL_ROTOR_STATE_H
 
 #include "MMFS.h"
+#include "bmp280_breakout.h"
+#include "bno055_breakout.h"
+#include "max_m10s_breakout.h"
 #include "Target.h"
 
 using namespace mmfs;
@@ -11,7 +14,7 @@ enum TailRotorStages { // TODO update this
     BOOST,
     COAST,
     DROUGE,
-    MAIN,
+    RELEASED,
     LANDED
 };
 
@@ -29,6 +32,7 @@ public:
     TailRotorState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, bool stateRecordsOwnData = true);
     void updateState(double newTime = -1) override;
     int buzzerPin;
+    int stage;
 
     bool topParachuteFlag;
     bool releasedFlag;
@@ -57,7 +61,6 @@ public:
 
 private:
     void determineStage();
-    int stage;
     double timeOfLaunch;
     double timeOfLastStage;
     double timeOfDay;
