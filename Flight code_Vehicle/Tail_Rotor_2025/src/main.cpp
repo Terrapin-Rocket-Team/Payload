@@ -26,7 +26,7 @@ TailRotorState TailRotor(tail_rotor_sensors, 3, nullptr, BUZZER_PIN);
 mmfs::Logger logger(120, 5);
 mmfs::ErrorHandler errorHandler;
 mmfs::PSRAM *psram;
-const int UPDATE_RATE = 10;
+const int UPDATE_RATE = 25;
 const int UPDATE_INTERVAL = 1000.0 / UPDATE_RATE;
 
 // Navigation Stuff
