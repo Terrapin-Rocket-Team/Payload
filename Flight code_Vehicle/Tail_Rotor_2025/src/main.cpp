@@ -16,7 +16,7 @@ mmfs::Sensor* tail_rotor_sensors[3] = {&barometer, &vehicle_imu, &gps};
 
 // Initialize Tail Rotor State
 //TailRotorKF kf;
-TailRotorState TailRotor(tail_rotor_sensors, 3, nullptr);
+TailRotorState TailRotor(tail_rotor_sensors, 3, nullptr, BUZZER_PIN);
 
 // MMFS Stuff
 mmfs::Logger logger(120, 5);
@@ -24,6 +24,12 @@ mmfs::ErrorHandler errorHandler;
 mmfs::PSRAM *psram;
 const int UPDATE_RATE = 10;
 const int UPDATE_INTERVAL = 1000.0 / UPDATE_RATE;
+
+// Navigation Stuff
+double DEFUALT_GOAL = 0; //defined between [0,360] going ccw from north
+
+// Tail Rotor Stuff
+int SERVO_PIN = 3;
 
 void setup() {
 
@@ -65,6 +71,9 @@ void setup() {
         gps.setBiasCorrectionMode(true);
     }
 
+    // Setup Fan
+    TailRotor.fanSetup(SERVO_PIN);
+
     logger.writeCsvHeader();
     logger.recordLogData(mmfs::INFO_, "Leaving Setup");
 }
@@ -91,4 +100,38 @@ void loop() {
         barometer.setBiasCorrectionMode(true);
         gps.setBiasCorrectionMode(true);
     }
+
+
+    double goalAngle = DEFUALT_GOAL;
+    Point targetCoords;
+    Point windCorrCoords;
+
+    /// Ground Test Code ///
+    // currentCoords = Point(-75.87514167, 39.08471667);
+    // targetCoords = Point(-75.77514167, 39.18471667);
+    // double goal = getGoalAngle(targetCoords, currentCoords);
+    // int pwm = TailRotor.findPWM(goalAngle, (millis() - lastUpdateTime)/1000);
+    // TailRotor.runFan(pwm);
+    // Serial.printf("Goal: %.2f\n", goal)
+    // Serial.printf("PWM: %d\n\n", pwm)
+    //////////////////////
+
+    /// Flight Code ///
+    if (TailRotor.stage == RELEASED) {
+        if (gps.getFixQual() > 3) {
+            targetCoords = TailRotor.getTargetCoordinates();
+            windCorrCoords = TailRotor.getWindCorrectionCoordinates(targetCoords);
+            goalAngle = TailRotor.getGoalAngle(windCorrCoords);
+            int pwm = TailRotor.findPWM(goalAngle, (millis() - lastUpdateTime)/1000);
+            TailRotor.runFan(pwm);
+        } else {
+            int pwm = TailRotor.findPWM(DEFUALT_GOAL, (millis() - lastUpdateTime)/1000);
+            TailRotor.runFan(pwm);
+        }
+    } else if (TailRotor.stage == LANDED) {
+        // Turn off the motor TODO check with cooper
+        motor.writeMicroseconds(1500);
+    }
+    //////////////////////
+
 }

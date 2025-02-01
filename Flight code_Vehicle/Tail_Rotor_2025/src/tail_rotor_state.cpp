@@ -13,12 +13,13 @@ const Point targetPoints[] = {
         Point(-106.920284, 32.943033)
 };
 
-TailRotorState::TailRotorState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, bool stateRecordsOwnData) : State(sensors, numSensors, kfilter, stateRecordsOwnData)
+TailRotorState::TailRotorState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, int BuzzerPin, bool stateRecordsOwnData) : State(sensors, numSensors, kfilter, stateRecordsOwnData)
 {
     stage = PRELAUNCH;
     timeOfLaunch = 0;
     timeOfLastStage = 0;
     timeOfDay = 0;
+    buzzerPin = BuzzerPin;
 }
 
 void TailRotorState::updateState(double newTime)
@@ -88,85 +89,56 @@ void TailRotorState::determineStage() // TODO Change this for the tail rotor
     }
 }
 
-void TailRotorState::fanSetup(int fowardFanPin,int backwardFanPin){
-  pinMode(fowardFanPin, OUTPUT);
-  pinMode(backwardFanPin, OUTPUT);
+void TailRotorState::fanSetup(int servoPin){
+  motor.attach(servoPin, 1000, 2000);
 }
 
-void TailRotorState::runFan(double pwm, int forwardFanPin, int backwardFanPin){
-
-  // Pick the direction that the fan spins
-  if (pwm == 0){
-    digitalWrite(forwardFanPin, LOW);
-    digitalWrite(backwardFanPin, LOW);
-    return;
-  }
-
-  // If the duty cycle is over, reset the timer
-  if (millis() - pwmTimer > pwmFrequency){
-    pwmTimer = millis();
-    digitalWrite(forwardFanPin, LOW);
-    digitalWrite(backwardFanPin, LOW);
-    if (pwm > 0){
-      digitalWrite(forwardFanPin, HIGH);
-    }
-    else if (pwm < 0){
-      digitalWrite(backwardFanPin, HIGH);
-    }
-  }
-
-  // If the timer is past the pwm cycle time turn the pulse to low
-  if (millis() < pwmTimer+((abs(pwm)*pwmFrequency)/255)){
-    digitalWrite(forwardFanPin, LOW);
-    digitalWrite(backwardFanPin, LOW);
-    if (pwm > 0){
-      digitalWrite(forwardFanPin, HIGH);
-    }
-    else if (pwm < 0){
-      digitalWrite(backwardFanPin, HIGH);
-    }
-  }
-  else{
-    digitalWrite(forwardFanPin, LOW);
-    digitalWrite(backwardFanPin, LOW);
-  }
+void TailRotorState::runFan(int pwm){
+  motor.writeMicroseconds(pwm);
 }
 
 
-double TailRotorState::findPWM(double goal, double timeSinceLastIteration){
+int TailRotorState::findPWM(float goal, float deltaTime){
   //Input goal is angle to position [-180:180] off the y-axis (CCW +)
-  //Input timeSinceLastIteration should be in seconds
+  //Input deltaTime should be in seconds
 
   IMU *imu = reinterpret_cast<IMU *>(getSensor(IMU_));
 
-  //Vector<3> ori = stateIMU.absoluteOrientationEuler;
-  Vector<3> ori = imu->getGyroReading(); // TODO this is obivously wrong, see the line above
-  double roll = ori.x();
-  double pitch = ori.y();
-  double yaw = ori.z(); //body frame from Inertial frame angle (psi)
+  float currentAngle = getOrientation().x();
 
-  //Find proportional error
-  double Ep = goal - yaw;
-  if(Ep >= 180){Ep = 360 - Ep;}
-  else if(Ep <= -180){Ep = 360 + Ep;}
+  // Calculate error
+  float error = currentAngle - goal;
+  
+  // Correct for angle wrap and propellor directionality
+  if(error > 180){
+    error = error - 360;
+    error = error*directionalCorrection;
+  }
+  
+  // Calculate derivative term
+  float derivative = 0;
+  if (deltaTime > 0) {
+    derivative = (error - previousError) / deltaTime;
+  }
+  
+  // PD Controller output
+  float output = (kp * error) + (kd * derivative);
 
-  // Ed Angular Velocity Method
-  Vector<3> angularVelocity = imu->getGyroReading();
-  double Ed = -angularVelocity.z(); // TODO does this need to be inertial ang velo?
-
-  //Find PWM
-  double pwm = Kp*Ep + Kd*Ed;
-  if(pwm<0){pwm=pwm*pwmScale;}
-  if(pwm>pwmMax){pwm=pwmMax;}
-  else if(pwm<-pwmScale*pwmMax){pwm=-pwmScale*pwmMax;}
-
-  if(Ep>-pwmZeroAngleCone && Ep<pwmZeroAngleCone){pwm=0;}
-
-  if (isnan(pwm)){
-    pwm = 0;
+  // Map the values of the output to the pwm values
+  int pwmOutput = map(output,180,-180,1200,1800);
+  // Constrain the inner limits to prevent motor stall
+  if((1470 < pwmOutput) && (1530 > pwmOutput)){
+    pwmOutput = 1500;
+  }
+  // Constrain the outer limits to prevent current overdraw
+  pwmOutput = constrain(pwmOutput, 1200, 1800);
+  
+  // Set motor speed to zero if a sign change is detected to prevent motor stall
+  if(((error<0) && (previousError>0)) || ((error>0) && (previousError<0))){
+    pwmOutput = 1500;
   }
 
-  return pwm;
+  return pwmOutput;
 }
 
 Point TailRotorState::getTargetCoordinates(){
@@ -241,24 +213,18 @@ Point TailRotorState::getWindCorrectionCoordinates(Point r){
 
 }
 
-// imu::Vector<3> TailRotorState::getInertialAngularVelocity(){
-//   //TODO whats even going on here?
-//   imu::Quaternion orientation = stateIMU.absoluteOrientation;
-//   orientation.normalize();
-//   imu::Quaternion orientationConj = orientation.conjugate();
+float TailRotorState::getGoalAngle(Point target) {
+  //Returns an angle from [0:360] from north to get to a target from a current point
 
-//   imu::Vector<3> rocketFrameAngularVelocity = stateIMU.angularVelocity;
-//   imu::Quaternion rocketFrameAngularVelocityQuat;
-//   rocketFrameAngularVelocityQuat.w() = 0;
-//   rocketFrameAngularVelocityQuat.x() = rocketFrameAngularVelocity.x();
-//   rocketFrameAngularVelocityQuat.y() = rocketFrameAngularVelocity.y();
-//   rocketFrameAngularVelocityQuat.z() = rocketFrameAngularVelocity.z();
+  // Get current angle
+  GPS *gps = reinterpret_cast<GPS *>(getSensor(GPS_));
+  Point current = Point(gps->getPos().y(), gps->getPos().x()); // longitude, latitude
 
-//   imu::Quaternion absoluteAngularVelocityQuat = quatMultiplication(quatMultiplication(orientation, rocketFrameAngularVelocityQuat), orientationConj);
-//   imu::Vector<3> absoluteAngularVelocity;
-//   absoluteAngularVelocity.x() = absoluteAngularVelocityQuat.x();
-//   absoluteAngularVelocity.y() = absoluteAngularVelocityQuat.y();
-//   absoluteAngularVelocity.z() = absoluteAngularVelocityQuat.z();
-
-//   return absoluteAngularVelocity;
-// }
+  double theta = atan2(target.y - current.y, target.x - current.x);
+  theta = theta * 180 / 3.14;
+  double goal = 270 + theta;
+  if (goal > 360) {
+    goal -= 360;
+  }
+  return goal;
+}
