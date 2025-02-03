@@ -61,10 +61,12 @@ public:
     bool topParachuteFlag;
     bool releasedFlag;
 
-    float kp = .5; //Proportional error constant -- MANUAL INPUT TODO
-    float kd = .4; //Derivative error constant -- MANUAL INPUT TODO
+    float kp = .7; // Proportional gain -- MANUAL INPUT
+    float kd = 2*kp; // Derivative gain -- MANUAL INPUT TODO
+    float ki = 0.2; // Integral gain -- MANUAL INPUT TODO
     float directionalCorrection = 0.8; // Correction for prop inefficiency
     float previousError = 0.0;
+    float integral = 0.0;
 
     imu::Vector<2> g; // wind speed in m/s (2D velocity vector) bad comment
     imu::Vector<2> w; // wind speed in m/s (2D velocity vector)

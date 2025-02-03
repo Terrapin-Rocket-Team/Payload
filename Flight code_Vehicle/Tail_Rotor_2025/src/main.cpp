@@ -33,7 +33,7 @@ const int UPDATE_INTERVAL = 1000.0 / UPDATE_RATE;
 double DEFUALT_GOAL = 0; //defined [-180:180] off the y-axis (CCW +)
 
 // Tail Rotor Stuff
-int SERVO_PIN = 3;
+int SERVO_PIN = 22;
 Servo motor;
 
 void setup() {
@@ -78,6 +78,14 @@ void setup() {
 
     // Setup Fan
     motor.attach(SERVO_PIN, 1000, 2000);
+    motor.writeMicroseconds(1500);
+    delay(2000); 
+    motor.writeMicroseconds(1550);
+    delay(1000);
+    motor.writeMicroseconds(1450);
+    delay(1000);
+    motor.writeMicroseconds(1500);
+    delay(1000);
 
     logger.writeCsvHeader();
     logger.recordLogData(mmfs::INFO_, "Leaving Setup");
@@ -118,9 +126,9 @@ void loop() {
     // float goalAngle = getGoalAngle(targetCoords, currentCoords);
     // float goalAngle = 0;
     // int pwm = TailRotor.findPWM(goalAngle, (millis() - lastUpdateTime)/1000);
-    // TailRotor.runFan(pwm);
-    // Serial.printf("Goal: %.2f\n", goal)
-    // Serial.printf("PWM: %d\n\n", pwm)
+    // motor.writeMicroseconds(pwm);
+    // Serial.printf("Goal: %.2f\n", goalAngle);
+    // Serial.printf("PWM: %d\n\n", pwm);
     //////////////////////
 
     /// Flight Code ///

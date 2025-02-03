@@ -103,7 +103,18 @@ int TailRotorState::findPWM(float goal, float deltaTime){
 
   IMU *imu = reinterpret_cast<IMU *>(getSensor(IMU_));
 
-  float currentAngle = getOrientation().x();
+  float currentAngle = getOrientation().toEuler().x() * 180/PI;
+  float currentAngley = getOrientation().toEuler().y() * 180/PI;
+  float currentAnglez = getOrientation().toEuler().z() * 180/PI + 180;
+
+  Serial.printf("Actual X: %.2f\n", currentAngle);
+  Serial.printf("Actual Y: %.2f\n", currentAngley);
+  Serial.printf("Actual Z: %.2f\n", currentAnglez);
+
+  // If very tilted turn the motor off
+  if(abs(currentAngley) > 45 || (abs(currentAnglez) > 45 && abs(currentAnglez) < 315)){
+    return 1500;
+  }
 
   // Calculate error
   float error = currentAngle - goal;
@@ -117,11 +128,14 @@ int TailRotorState::findPWM(float goal, float deltaTime){
   // Calculate derivative term
   float derivative = 0;
   if (deltaTime > 0) {
-    derivative = (error - previousError) / deltaTime;
+    derivative = imu->getAngularVelocity().y();
+    //derivative = (error - previousError) / deltaTime;
   }
+
+  // Calculated integral term
   
   // PD Controller output
-  float output = (kp * error) + (kd * derivative);
+  float output = kp*constrain(error,-60,60) + (kd * derivative) + (ki * integral);
 
   // Map the values of the output to the pwm values
   int pwmOutput = map(output,180,-180,1200,1800);
@@ -131,10 +145,11 @@ int TailRotorState::findPWM(float goal, float deltaTime){
   }
   // Constrain the outer limits to prevent current overdraw
   pwmOutput = constrain(pwmOutput, 1200, 1800);
-  
+  integral += error * deltaTime;
   // Set motor speed to zero if a sign change is detected to prevent motor stall
   if(((error<0) && (previousError>0)) || ((error>0) && (previousError<0))){
     pwmOutput = 1500;
+    integral = 0;
   }
 
   return pwmOutput;
