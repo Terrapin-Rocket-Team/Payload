@@ -431,7 +431,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "Vehicle PCB v2.kicad_pro",
+    "filename": "KiCad8 Vid.kicad_pro",
     "version": 1
   },
   "net_settings": {
@@ -576,7 +576,7 @@
   },
   "sheets": [
     [
-      "853d71b2-f790-4c12-b8e9-eb5816c70be0",
+      "54205261-25a1-4f74-89e2-ed1ee9a9b8c1",
       "Root"
     ]
   ],

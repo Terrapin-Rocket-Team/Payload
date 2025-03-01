@@ -2,23 +2,32 @@
 
 using namespace mmfs;
 
-const Line line1 = Line(Point(-106.922582, 32.939719), Point(-106.909264, 32.943206));
+/// Navigation Stuff ///
+// Higgs	
+const Line line1 = Line(Point(-75.87439444, 39.079425), Point(-75.87331111, 39.08091111));
+const Line line2 = Line(Point(-75.87320833, 39.07993889), Point(-75.871675, 39.07527778));
+const Line line3 = Line(Point(-75.87404444, 39.08616667), Point(-75.87263056, 39.08143889));
 
-Obstacle* obstacles[] = {
-    &line1
+Obstacle* obstacles[numObs] = {
+    &line1,
+    &line2,
+    &line3
 };
 
-const Point targetPoints[] = {
-        Point(-106.914875, 32.937792),
-        Point(-106.920284, 32.943033)
+const Point targetPoints[numTarg] = {
+        Point(-75.87514167, 39.08471667),
+        Point(-75.87820833, 39.077525),
+        Point(-75.87034444, 39.08389722),
 };
+/////////////////
 
-TailRotorState::TailRotorState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, bool stateRecordsOwnData) : State(sensors, numSensors, kfilter, stateRecordsOwnData)
+TailRotorState::TailRotorState(Sensor **sensors, int numSensors, LinearKalmanFilter *kfilter, int BuzzerPin) : State(sensors, numSensors, kfilter)
 {
     stage = PRELAUNCH;
     timeOfLaunch = 0;
     timeOfLastStage = 0;
     timeOfDay = 0;
+    buzzerPin = BuzzerPin;
 }
 
 void TailRotorState::updateState(double newTime)
@@ -42,25 +51,14 @@ void TailRotorState::determineStage() // TODO Change this for the tail rotor
     // barometer is ok AND the relative altitude is greater than 30 ft OR baro is not ok
     // essentially, if we have either sensor and they meet launch threshold, launch. Otherwise, it will never detect a launch.
     {
-        bb.aonoff(buzzerPin, 200);
+        bb.aonoff(buzzerPin, 200, 2);
         logger.setRecordMode(FLIGHT);
         stage = BOOST;
         timeOfLaunch = currentTime;
         timeOfLastStage = currentTime;
         logger.recordLogData(INFO_, "Launch detected.");
-        logger.recordLogData(INFO_, "Printing static data.");
-        for (int i = 0; i < maxNumSensors; i++)
-        {
-            if (sensorOK(sensors[i]))
-            {
-                char logData[200];
-                snprintf(logData, 200, "%s: %s", sensors[i]->getName(), sensors[i]->getStaticDataString());
-                logger.recordLogData(INFO_, logData);
-                sensors[i]->setBiasCorrectionMode(false);
-            }
-        }
     }
-    else if (stage == BOOST && abs(acceleration.z()) < 10)
+    else if (stage == BOOST && imu->getAccelerationGlobal().z() < 0)
     {
         bb.aonoff(buzzerPin, 200, 2);
         timeOfLastStage = currentTime;
@@ -77,106 +75,84 @@ void TailRotorState::determineStage() // TODO Change this for the tail rotor
         stage = DROUGE;
         logger.recordLogData(INFO_, "Drogue conditions detected.");
     }
-    else if (stage == DROUGE && baro->getAGLAltFt() < 1000 && timeSinceLaunch > 10)
+    else if (stage == DROUGE && baro->getAGLAltFt() < 3000 && timeSinceLaunch > 10)
     {
         bb.aonoff(buzzerPin, 200, 4);
-        stage = MAIN;
+        stage = RELEASED;
         timeOfLastStage = currentTime;
         logger.recordLogData(INFO_, "Main parachute conditions detected.");
     }
-    else if (stage == MAIN && baroVelocity > -1 && baro->getAGLAltFt() < 66 && timeSinceLaunch > 15)
+    else if (stage == RELEASED && ((baro->getAGLAltFt() < 100) || ((currentTime - timeOfLastStage) > 600000)))
     {
         bb.aonoff(buzzerPin, 200, 5);
         timeOfLastStage = currentTime;
         stage = LANDED;
-        logger.recordLogData(INFO_, "Landing detected. Waiting for 5 seconds to dump data.");
+        logger.recordLogData(INFO_, "Landing detected. Waiting for 30 seconds to dump data.");
     }
-    else if (stage == LANDED && currentTime - timeOfLastStage > 5)
+    else if (stage == LANDED && currentTime - timeOfLastStage > 30)
     {
         logger.setRecordMode(GROUND);
         logger.recordLogData(INFO_, "Dumped data after landing.");
+        stage = PRELAUNCH;
     }
 }
 
-void TailRotorState::fanSetup(int fowardFanPin,int backwardFanPin){
-  pinMode(fowardFanPin, OUTPUT);
-  pinMode(backwardFanPin, OUTPUT);
-}
-
-void TailRotorState::runFan(double pwm, int forwardFanPin, int backwardFanPin){
-
-  // Pick the direction that the fan spins
-  if (pwm == 0){
-    digitalWrite(forwardFanPin, LOW);
-    digitalWrite(backwardFanPin, LOW);
-    return;
-  }
-
-  // If the duty cycle is over, reset the timer
-  if (millis() - pwmTimer > pwmFrequency){
-    pwmTimer = millis();
-    digitalWrite(forwardFanPin, LOW);
-    digitalWrite(backwardFanPin, LOW);
-    if (pwm > 0){
-      digitalWrite(forwardFanPin, HIGH);
-    }
-    else if (pwm < 0){
-      digitalWrite(backwardFanPin, HIGH);
-    }
-  }
-
-  // If the timer is past the pwm cycle time turn the pulse to low
-  if (millis() < pwmTimer+((abs(pwm)*pwmFrequency)/255)){
-    digitalWrite(forwardFanPin, LOW);
-    digitalWrite(backwardFanPin, LOW);
-    if (pwm > 0){
-      digitalWrite(forwardFanPin, HIGH);
-    }
-    else if (pwm < 0){
-      digitalWrite(backwardFanPin, HIGH);
-    }
-  }
-  else{
-    digitalWrite(forwardFanPin, LOW);
-    digitalWrite(backwardFanPin, LOW);
-  }
-}
-
-
-double TailRotorState::findPWM(double goal, double timeSinceLastIteration){
+int TailRotorState::findPWM(float goal, float deltaTime){
   //Input goal is angle to position [-180:180] off the y-axis (CCW +)
-  //Input timeSinceLastIteration should be in seconds
+  //Input deltaTime should be in seconds
 
   IMU *imu = reinterpret_cast<IMU *>(getSensor(IMU_));
 
-  //Vector<3> ori = stateIMU.absoluteOrientationEuler;
-  Vector<3> ori = imu->getGyroReading(); // TODO this is obivously wrong, see the line above
-  double roll = ori.x();
-  double pitch = ori.y();
-  double yaw = ori.z(); //body frame from Inertial frame angle (psi)
+  float currentAngle = getOrientation().toEuler().x() * 180/PI;
+  float currentAngley = getOrientation().toEuler().y() * 180/PI;
+  float currentAnglez = getOrientation().toEuler().z() * 180/PI + 180;
 
-  //Find proportional error
-  double Ep = goal - yaw;
-  if(Ep >= 180){Ep = 360 - Ep;}
-  else if(Ep <= -180){Ep = 360 + Ep;}
+  Serial.printf("Actual X: %.2f\n", currentAngle);
+  Serial.printf("Actual Y: %.2f\n", currentAngley);
+  Serial.printf("Actual Z: %.2f\n", currentAnglez);
 
-  // Ed Angular Velocity Method
-  Vector<3> angularVelocity = imu->getGyroReading();
-  double Ed = -angularVelocity.z(); // TODO does this need to be inertial ang velo?
-
-  //Find PWM
-  double pwm = Kp*Ep + Kd*Ed;
-  if(pwm<0){pwm=pwm*pwmScale;}
-  if(pwm>pwmMax){pwm=pwmMax;}
-  else if(pwm<-pwmScale*pwmMax){pwm=-pwmScale*pwmMax;}
-
-  if(Ep>-pwmZeroAngleCone && Ep<pwmZeroAngleCone){pwm=0;}
-
-  if (isnan(pwm)){
-    pwm = 0;
+  // If very tilted turn the motor off
+  if(abs(currentAngley) > 45 || (abs(currentAnglez) > 45 && abs(currentAnglez) < 315)){
+    return 1500;
   }
 
-  return pwm;
+  // Calculate error
+  float error = currentAngle - goal;
+  
+  // Correct for angle wrap and propellor directionality
+  if(error > 180){
+    error = error - 360;
+    error = error*directionalCorrection;
+  }
+  
+  // Calculate derivative term
+  float derivative = 0;
+  if (deltaTime > 0) {
+    derivative = imu->getAngularVelocity().y();
+    //derivative = (error - previousError) / deltaTime;
+  }
+
+  // Calculated integral term
+  
+  // PD Controller output
+  float output = kp*constrain(error,-60,60) + (kd * derivative) + (ki * integral);
+
+  // Map the values of the output to the pwm values
+  int pwmOutput = map(output,180,-180,1200,1800);
+  // Constrain the inner limits to prevent motor stall
+  if((1470 < pwmOutput) && (1530 > pwmOutput)){
+    pwmOutput = 1500;
+  }
+  // Constrain the outer limits to prevent current overdraw
+  pwmOutput = constrain(pwmOutput, 1200, 1800);
+  integral += error * deltaTime;
+  // Set motor speed to zero if a sign change is detected to prevent motor stall
+  if(((error<0) && (previousError>0)) || ((error>0) && (previousError<0))){
+    pwmOutput = 1500;
+    integral = 0;
+  }
+
+  return pwmOutput;
 }
 
 Point TailRotorState::getTargetCoordinates(){
@@ -251,24 +227,85 @@ Point TailRotorState::getWindCorrectionCoordinates(Point r){
 
 }
 
-// imu::Vector<3> TailRotorState::getInertialAngularVelocity(){
-//   //TODO whats even going on here?
-//   imu::Quaternion orientation = stateIMU.absoluteOrientation;
-//   orientation.normalize();
-//   imu::Quaternion orientationConj = orientation.conjugate();
+float TailRotorState::getGoalAngle(Point target) {
+  //Returns an angle from [0:360] from north to get to a target from a current point
 
-//   imu::Vector<3> rocketFrameAngularVelocity = stateIMU.angularVelocity;
-//   imu::Quaternion rocketFrameAngularVelocityQuat;
-//   rocketFrameAngularVelocityQuat.w() = 0;
-//   rocketFrameAngularVelocityQuat.x() = rocketFrameAngularVelocity.x();
-//   rocketFrameAngularVelocityQuat.y() = rocketFrameAngularVelocity.y();
-//   rocketFrameAngularVelocityQuat.z() = rocketFrameAngularVelocity.z();
+  // Get current angle
+  GPS *gps = reinterpret_cast<GPS *>(getSensor(GPS_));
+  Point current = Point(gps->getPos().y(), gps->getPos().x()); // longitude, latitude
 
-//   imu::Quaternion absoluteAngularVelocityQuat = quatMultiplication(quatMultiplication(orientation, rocketFrameAngularVelocityQuat), orientationConj);
-//   imu::Vector<3> absoluteAngularVelocity;
-//   absoluteAngularVelocity.x() = absoluteAngularVelocityQuat.x();
-//   absoluteAngularVelocity.y() = absoluteAngularVelocityQuat.y();
-//   absoluteAngularVelocity.z() = absoluteAngularVelocityQuat.z();
+  double theta = atan2(target.y - current.y, target.x - current.x);
+  theta = theta * 180 / 3.14;
+  double goal = 270 + theta;
+  if (goal > 360) {
+    goal -= 360;
+  }
+  return goal;
+}
 
-//   return absoluteAngularVelocity;
-// }
+const int TailRotorState::getNumPackedDataPoints() const { return 22; }
+
+const PackedType *TailRotorState::getPackedOrder() const
+{
+    static const PackedType order[22] = {
+        FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, INT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT};
+    return order;
+}
+
+const char **TailRotorState::getPackedDataLabels() const
+{
+    static const char *labels[22] = {
+        "Time (s)",
+        "PX (m)",
+        "PY (m)",
+        "PZ (m)",
+        "VX (m/s)",
+        "VY (m/s)",
+        "VZ (m/s)",
+        "AX (m/s/s)",
+        "AY (m/s/s)",
+        "AZ (m/s/s)",
+        "pwm",
+        "goalAngleUsed",
+        "goalAngleCalculated",
+        "GX",
+        "GY",
+        "WX",
+        "WY",
+        "vehicleSpeed",
+        "averageWindCorrectionCoords_X",
+        "averageWindCorrectionCoords_Y",
+        "targetCoords_X",
+        "targetCoords_Y"
+        };
+    return labels;
+}
+
+void TailRotorState::packData()
+{
+
+    struct PackedData data;
+    data.t = currentTime;
+    data.px = position.x();
+    data.py = position.y();
+    data.pz = position.z();
+    data.vx = velocity.x();
+    data.vy = velocity.y();
+    data.vz = velocity.z();
+    data.ax = acceleration.x();
+    data.ay = acceleration.y();
+    data.az = acceleration.z();
+    data.pwm = pwm;
+    data.goalAngleUsed = goalAngleUsed;
+    data.goalAngleCalculated = goalAngleCalculated;
+    data.gx = g.x();
+    data.gy = g.y();
+    data.wx = w.x();
+    data.wy = w.y();
+    data.vehicleSpeed = v_s;
+    data.averageWindCorrectionCoords_X = averageWindCorrectionCoords.x;
+    data.averageWindCorrectionCoords_Y = averageWindCorrectionCoords.y;
+    data.targetCoords_X = targetCoords.x;
+    data.targetCoords_Y = targetCoords.y;
+    memcpy(packedData, &data, sizeof(PackedData));
+}
