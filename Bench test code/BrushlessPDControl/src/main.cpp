@@ -47,11 +47,11 @@ void setup() {
   motor.attach(servo_pin, 1000, 2000);   
   motor.writeMicroseconds(1500);
   delay(2000); 
-  motor.writeMicroseconds(1550);
-  delay(1000);
-  motor.writeMicroseconds(1450);
+  motor.writeMicroseconds(1700);
   delay(1000);
   motor.writeMicroseconds(1500);
+  delay(1000);
+  motor.writeMicroseconds(1400);
   delay(1000); 
   Serial.begin(9600);
   //set buzzer pin to output
@@ -88,11 +88,11 @@ void loop() {
   // Extract the roll angle
   float currentAngle = event.orientation.x;
   float currentAngley = event.orientation.y;
-  float currentAnglez = event.orientation.z+180;
-  //Serial.print("currenty =");
-  //Serial.println(currentAngley);
-  //Serial.print("currentz =");
-  //Serial.println(currentAnglez);
+  float currentAnglez = event.orientation.z-90;
+  Serial.print("currenty =");
+  Serial.println(currentAngley);
+  Serial.print("currentz =");
+  Serial.println(currentAnglez);
   if(abs(currentAngley) > 45 || abs(currentAnglez) > 45){
     motor.writeMicroseconds(1500);
     return;
@@ -140,7 +140,7 @@ void loop() {
     pwmOutput = 1500;
   }
   // Constrain the outer limits to prevent current overdraw
-  pwmOutput = constrain(pwmOutput, 1300, 1700);
+  pwmOutput = constrain(pwmOutput, 1200, 1800);
   integral += error * deltaTime;
   // Set motor speed to zero if a sign change is detected to prevent motor stall
   if(((error<0) && (previousError>0)) || ((error>0) && (previousError<0))){
