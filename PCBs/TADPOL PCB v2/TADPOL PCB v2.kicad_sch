@@ -4302,6 +4302,28 @@
 			)
 		)
 	)
+	(global_label "Nichrome_1"
+		(shape input)
+		(at 153.67 34.29 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "3c46d8c2-249a-4763-a814-5e23eab31497")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 167.7223 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "RX_LORA"
 		(shape input)
 		(at 153.67 36.83 0)
