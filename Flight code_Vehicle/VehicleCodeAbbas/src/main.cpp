@@ -5,11 +5,11 @@
 #include "VehicleState.h"
 
 
-MAX_M10S gps;
-BMP280 baro;
-BNO055 bno;
+mmfs::MAX_M10S gps;
+mmfs::MS5611 baro;
+mmfs::BMI088andLIS3MDL vehicle_imu;
 Logger logger;
-Sensor *sensors[] = {&gps, &baro, &bno};
+Sensor *sensors[] = {&gps, &baro, &vehicle_imu};
 
 VehicleState vehicle(sensors, 3, nullptr);
 
@@ -79,7 +79,7 @@ void loop()
   if (vehicle.stage == MAIN) {
 
     // Extract the roll angle
-    Matrix orientation = bno.getOrientation().toMatrix();
+    Matrix orientation = vehicle_imu.getOrientation().toMatrix();
 
     float currentAngle = orientation.get(2,0); //yaw
     float currentAngley = orientation.get(1,0); //pitch

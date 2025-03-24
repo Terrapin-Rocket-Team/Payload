@@ -3,12 +3,37 @@
 
 using namespace mmfs;
 
+/*
+        float leftServoVal;
+        float rightServoVal;
+        float gx;
+        float gy;
+        float wx;
+        float wy;
+        float vehicleSpeed;
+        float averageWindCorrectionCoords_X;
+        float averageWindCorrectionCoords_Y;
+        float targetCoords_X;
+        float targetCoords_Y;
+        */
+
 VehicleState::VehicleState(Sensor **sensors, int numSensors, Filter *filter) : State(sensors, numSensors, filter) {
     stage = PRELAUNCH;
     timeOfLaunch = 0;
     timeOfLastStage = 0;
     timeOfDay = 0;
     //buzzer_pin = buzz_pin;
+
+    addColumn(DOUBLE, &leftServoVal, "left servo value");
+    addColumn(DOUBLE, &rightServoVal, "right servo value");
+    addColumn(DOUBLE, &gx, "gx");
+    addColumn(DOUBLE, &gy, "gy");
+    addColumn(DOUBLE, &wx, "wx");
+    addColumn(DOUBLE, &wy, "wy");
+    addColumn(DOUBLE, &vehicleSpeed, "Vehicle Speed");
+    addColumn(DOUBLE, &targetCoords_X, "Vehicle Speed");
+    addColumn(DOUBLE, &targetCoords_Y, "Vehicle Speed");
+
 }
 
 void VehicleState::updateState(double newTime)
@@ -90,6 +115,7 @@ void VehicleState::determineStage()
     }
 }
 
+/*
 Point VehicleState::getTargetCoordinates(){
 
     GPS *gps = reinterpret_cast<GPS *>(getSensor(GPS_));
@@ -109,6 +135,7 @@ Point VehicleState::getTargetCoordinates(){
     }
   
     // loops through all targets
+    
     for (int i = 0; i < numTarg; i++) {
         // checks if a target point from the valid list interacts with an obstacle
         for (Obstacle* obs : obstacles) {
@@ -143,6 +170,7 @@ Point VehicleState::getTargetCoordinates(){
     targetCoords = closestPoint;
     return closestPoint;
 }
+    */
 
 Point VehicleState::getWindCorrectionCoordinates(Point r){
     // Design and logic in this doc (https://docs.google.com/document/d/1soUME8JDSpf028hsgl010TmuEHOHm2ZJCv7ecYDvrWE/edit)
@@ -170,12 +198,12 @@ Point VehicleState::getWindCorrectionCoordinates(Point r){
 // Servo Functions
 
 void VehicleState::servoSetup(int leftServoPin,int rightServoPin,int camServoPin, double leftSetNeutral,double rightSetNeutral,double camSetNeutral){ //input the servo pins, and the value for the servo to be up
-    left.setSignalPin(leftServoPin);
-    right.setSignalPin(rightServoPin);
-    pitch.setSignalPin(camServoPin);
-    left.setAngle(leftSetNeutral);
-    right.setAngle(rightSetNeutral);
-    pitch.setAngle(camSetNeutral);
+    left.attach(leftServoPin);
+    right.attach(rightServoPin);
+    pitch.attach(camServoPin);
+    left.write(leftSetNeutral);
+    right.write(rightSetNeutral);
+    pitch.write(camSetNeutral);
 }
 
 void VehicleState::moveServo(double delta){
@@ -199,8 +227,8 @@ void VehicleState::moveServo(double delta){
     if (left_servo_value <= 90){left_servo_value = 90;}
     if (right_servo_value >= 90){right_servo_value = 90;}
 
-    left.setAngle(left_servo_value);
-    right.setAngle(right_servo_value);
+    left.write(left_servo_value);
+    right.write(right_servo_value);
 }
 
 void VehicleState::moveCam(){
@@ -209,7 +237,7 @@ void VehicleState::moveCam(){
 
     //implement cam control code
 
-    pitch.setAngle(cam_servo_value);
+    pitch.write(cam_servo_value);
 }
 
 
@@ -225,68 +253,4 @@ void VehicleState::goDirection(double goal){
     double delta = findDelta(yaw, goal);
      moveServo(delta);
 
-}
-
-const int VehicleState::getNumPackedDataPoints() const { return 21; }
-
-const PackedType *VehicleState::getPackedOrder() const
-{
-    static const PackedType order[] = {
-        FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT, FLOAT};
-    return order;
-}
-
-const char **VehicleState::getPackedDataLabels() const
-{
-    static const char *labels[] = {
-        "Time (s)",
-        "PX (m)",
-        "PY (m)",
-        "PZ (m)",
-        "VX (m/s)",
-        "VY (m/s)",
-        "VZ (m/s)",
-        "AX (m/s/s)",
-        "AY (m/s/s)",
-        "AZ (m/s/s)",
-        "left_servo_value",
-        "right_servo_value",
-        "GX",
-        "GY",
-        "WX",
-        "WY",
-        "vehicleSpeed",
-        "averageWindCorrectionCoords_X",
-        "averageWindCorrectionCoords_Y",
-        "targetCoords_X",
-        "targetCoords_Y"
-        };
-    return labels;
-}
-
-void VehicleState::packData()
-{
-
-    struct Data data;
-    data.t = currentTime;
-    data.px = position.x();;
-    data.py = position.y();;
-    data.pz = position.z();;
-    data.vx = velocity.x();;
-    data.vy = velocity.y();;
-    data.vz = velocity.z();;
-    data.ax = acceleration.x();;
-    data.ay = acceleration.y();;
-    data.az = acceleration.z();;
-    data.leftServoVal = left_servo_value;
-    data.rightServoVal = right_servo_value;
-    data.gx = g.x();
-    data.gy = g.y();
-    data.wx = w.x();
-    data.wy = w.y();
-    data.vehicleSpeed = v_s;
-    data.averageWindCorrectionCoords_X = averageWindCorrectionCoords.x;
-    data.averageWindCorrectionCoords_Y = averageWindCorrectionCoords.y;
-    data.targetCoords_X = targetCoords.x;
-    data.targetCoords_Y = targetCoords.y;
 }

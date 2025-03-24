@@ -3,6 +3,7 @@
 
 #include <State/State.h>
 #include "target.h"
+#include "Servo.h"
 
 
 enum VehcileStages { // TODO update this
@@ -27,35 +28,21 @@ using namespace mmfs;
 
 class VehicleState : public State {
 
-    struct PackedData
-    {
-        float t;
-        float px;
-        float py;
-        float pz;
-        float vx;
-        float vy;
-        float vz;
-        float ax;
-        float ay;
-        float az;
-        // Payload specific data
-        float leftServoVal;
-        float rightServoVal;
-        float gx;
-        float gy;
-        float wx;
-        float wy;
-        float vehicleSpeed;
-        float averageWindCorrectionCoords_X;
-        float averageWindCorrectionCoords_Y;
-        float targetCoords_X;
-        float targetCoords_Y;
-    };
+    float leftServoVal;
+    float rightServoVal;
+    float gx;
+    float gy;
+    float wx;
+    float wy;
+    float vehicleSpeed;
+    float averageWindCorrectionCoords_X;
+    float averageWindCorrectionCoords_Y;
+    float targetCoords_X;
+    float targetCoords_Y;
 
-    Servo pitch;
-    Servo left;
-    Servo right;
+    PWMServo pitch;
+    PWMServo left;
+    PWMServo right;
 
     public:
         VehicleState(Sensor **sensors, int numSensors, Filter *filter);
@@ -85,23 +72,14 @@ class VehicleState : public State {
         void moveCam();
         double findDelta(double phi, double gamma);
         void goDirection(double direction);
-
-        virtual const PackedType *getPackedOrder() const override;
-        virtual const int getNumPackedDataPoints() const override;
-        virtual const char **getPackedDataLabels() const override;
-
-
         
     private:
 
-    void determineStage();
+    void determineStage() override;
 
     double timeOfLaunch;
     double timeOfLastStage;
     double timeOfDay;
-
-    // DataReporter functions
-   virtual void packData() override;
 };
 
 #endif
