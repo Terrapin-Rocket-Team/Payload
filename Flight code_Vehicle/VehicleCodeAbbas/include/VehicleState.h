@@ -28,21 +28,6 @@ using namespace mmfs;
 
 class VehicleState : public State {
 
-    float leftServoVal;
-    float rightServoVal;
-    float gx;
-    float gy;
-    float wx;
-    float wy;
-    float vehicleSpeed;
-    float averageWindCorrectionCoords_X;
-    float averageWindCorrectionCoords_Y;
-    float targetCoords_X;
-    float targetCoords_Y;
-
-    PWMServo pitch;
-    PWMServo left;
-    PWMServo right;
 
     public:
         VehicleState(Sensor **sensors, int numSensors, Filter *filter);
@@ -72,6 +57,26 @@ class VehicleState : public State {
         void moveCam();
         double findDelta(double phi, double gamma);
         void goDirection(double direction);
+        double goalOrbit(double rocketX, double rocketY, double X, double Y, double R);
+
+        PWMServo pitch;
+        PWMServo left;
+        PWMServo right;
+
+        float leftServoValue;
+        float rightServoValue;
+        float servoOutput;
+        float vehicleX;
+        float vehicleY;
+        float currentAngle;
+        float targetAngle;
+        float currentAngleY;
+        float currentAngleZ;
+        float vehicleSpeedX;
+        float vehicleSpeedY;
+        float vehicleSpeedZ;
+        float altitude;
+    
         
     private:
 

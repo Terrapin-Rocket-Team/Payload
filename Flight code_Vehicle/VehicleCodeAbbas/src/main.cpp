@@ -20,7 +20,9 @@ MMFSConfig config = MMFSConfig()
 
 MMFSSystem computer = MMFSSystem(&config);
 
-float targetAngle = 60;
+float targetAngle;
+float rocketx;
+float rockety;
 
 // PD Controller gains
 float kp = 0.5; // Proportional gain
@@ -34,16 +36,8 @@ void setup()
 {
   computer.init();
   getLogger().recordLogData(mmfs::INFO_, "Entering Setup");  
-  /*
-  if (!(logger.isSdCardReady()))
-        bb.onoff(BUZZER_PIN, 200, 3);
 
-    if (!(logger.isPsramReady()))
-        bb.onoff(BUZZER_PIN, 200, 3);
-
-  */
-  vehicle.servoSetup(1,2,3,180,0,90);
-
+  vehicle.servoSetup(2,3,4,180,0,90);
 
   // how many nichrome do we need?
   pinMode(4, OUTPUT);
@@ -67,6 +61,9 @@ void loop()
   if (vehicle.stage == ACTUATION) {
     //digitalWrite(...) scr?
 
+    rocketx = gps.getPos()[0]; // set point of ejection as origin to orbit around
+    rockety = gps.getPos()[1];
+
     delay(2000); //wait for drogue chute to catch completely
 
     //nichrome for bag/parafoil
@@ -78,14 +75,14 @@ void loop()
 
   if (vehicle.stage == MAIN) {
 
-    // Extract the roll angle
+    // Get current orientation
+
     Matrix orientation = vehicle_imu.getOrientation().toMatrix();
 
     float currentAngle = orientation.get(2,0); //yaw
-    float currentAngley = orientation.get(1,0); //pitch
-    float currentAnglez = orientation.get(0,0); //roll
 
     // Calculate error
+    targetAngle = vehicle.goalOrbit(rocketx, rockety, gps.getPos()[0], gps.getPos()[1], 50/111111); //final argument is target radius (converting 50 long/lat to meters)
     float error = currentAngle - targetAngle;
 
     Serial.print("Error: ");
@@ -95,23 +92,22 @@ void loop()
       error = error - 360;
     }
 
-    unsigned long currentTime = millis();
     float deltaTime = (currentTime - previousTime) / 1000.0; // Convert to seconds
-
-    /*
 
     // Calculate derivative term
     float derivative = 0;
-    if (deltaTime > 0) {
-      derivative = (error - previousError) / deltaTime;
-    }
-      
+
+    derivative = (error - previousError)/deltaTime;
+
+    // Calculate integral term
     // PD Controller output
-    float output = (kp * error) + (kd * derivative);
 
-    */
+    float output = kp*constrain(error,-60,60) + (kd * derivative);
+    double servoAngle = map(constrain(output,-100,100),-100,100,0,180);
 
-    vehicle.moveServo(error);
+    // For actuating:
+    vehicle.left.write(constrain(servoAngle,0,90));
+    vehicle.right.write(constrain(servoAngle,90,180));
 
 
     Serial.print(", Target: ");
@@ -119,13 +115,31 @@ void loop()
     Serial.print(", Current: ");
     Serial.print(currentAngle);
     Serial.print(", rservoval: ");
-    Serial.println(vehicle.right_servo_value);
+    Serial.println(vehicle.rightServoValue);
     Serial.print(", lservoval: ");
-    Serial.println(vehicle.left_servo_value);  
+    Serial.println(vehicle.leftServoValue);  
+
+    vehicle.leftServoValue = vehicle.left.read();
+    vehicle.rightServoValue = vehicle.right.read();
+    vehicle.servoOutput = output;
+    vehicle.vehicleX = gps.getPos()[0];
+    vehicle.vehicleY = gps.getPos()[1];
+    vehicle.currentAngle = currentAngle;
+    vehicle.targetAngle = targetAngle;
+    vehicle.currentAngleY = orientation.get(1,0);
+    vehicle.currentAngleZ = orientation.get(0,0);
+    // vehicle.vehicleSpeedX =  //figure these out
+    // vehicle.vehicleSpeedY = 
+    // vehicle.vehicleSpeedZ = 
+    vehicle.altitude = baro.getAGLAltFt();
+    
+
 
 
     previousError = error;
     previousTime = currentTime;
+
+    
 
     // Small delay to avoid saturating the loop
     delay(10);

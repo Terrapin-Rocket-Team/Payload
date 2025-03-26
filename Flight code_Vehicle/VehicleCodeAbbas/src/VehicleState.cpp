@@ -3,36 +3,26 @@
 
 using namespace mmfs;
 
-/*
-        float leftServoVal;
-        float rightServoVal;
-        float gx;
-        float gy;
-        float wx;
-        float wy;
-        float vehicleSpeed;
-        float averageWindCorrectionCoords_X;
-        float averageWindCorrectionCoords_Y;
-        float targetCoords_X;
-        float targetCoords_Y;
-        */
 
 VehicleState::VehicleState(Sensor **sensors, int numSensors, Filter *filter) : State(sensors, numSensors, filter) {
     stage = PRELAUNCH;
     timeOfLaunch = 0;
     timeOfLastStage = 0;
     timeOfDay = 0;
-    //buzzer_pin = buzz_pin;
 
-    addColumn(DOUBLE, &leftServoVal, "left servo value");
-    addColumn(DOUBLE, &rightServoVal, "right servo value");
-    addColumn(DOUBLE, &gx, "gx");
-    addColumn(DOUBLE, &gy, "gy");
-    addColumn(DOUBLE, &wx, "wx");
-    addColumn(DOUBLE, &wy, "wy");
-    addColumn(DOUBLE, &vehicleSpeed, "Vehicle Speed");
-    addColumn(DOUBLE, &targetCoords_X, "Vehicle Speed");
-    addColumn(DOUBLE, &targetCoords_Y, "Vehicle Speed");
+    addColumn(DOUBLE, &left_servo_value, "left servo value");
+    addColumn(DOUBLE, &right_servo_value, "right servo value");
+    addColumn(DOUBLE, &servoOutput, "combined servo output");
+    addColumn(DOUBLE, &vehicleX, "GPS X");
+    addColumn(DOUBLE, &vehicleY, "GPS Y");
+    addColumn(DOUBLE, &currentAngle, "current angle");
+    addColumn(DOUBLE, &targetAngle, "target angle");
+    addColumn(DOUBLE, &currentAngleY, "current angle pitch");
+    addColumn(DOUBLE, &currentAngleZ, "current angle roll");
+    addColumn(DOUBLE, &vehicleSpeedX, "Vehicle Speed X");
+    addColumn(DOUBLE, &vehicleSpeedY, "Vehicle Speed Y");
+    addColumn(DOUBLE, &vehicleSpeedZ, "Vehicle Speed Z");
+    addColumn(DOUBLE, &altitude, "Altitude");
 
 }
 
@@ -206,31 +196,6 @@ void VehicleState::servoSetup(int leftServoPin,int rightServoPin,int camServoPin
     pitch.write(camSetNeutral);
 }
 
-void VehicleState::moveServo(double delta){
-
-    double left_servo_value;
-    double right_servo_value;
-
-
-    if(delta < 0) {
-        left_servo_value = 180; //this should be whatever angle is straight up
-        right_servo_value = -1*delta;
-    }
-
-    if(delta > 0) {
-        right_servo_value = 0; //this should be whatever angle is straight up
-        left_servo_value = 180-delta;
-    }
-    //Serial.print("Left Servo Value: "); Serial.print(left_servo_value); Serial.print(", Right Servo Value: "); Serial.println(right_servo_value);
-    
-    //constrain to range
-    if (left_servo_value <= 90){left_servo_value = 90;}
-    if (right_servo_value >= 90){right_servo_value = 90;}
-
-    left.write(left_servo_value);
-    right.write(right_servo_value);
-}
-
 void VehicleState::moveCam(){
 
     double cam_servo_value = 0;
@@ -240,8 +205,20 @@ void VehicleState::moveCam(){
     pitch.write(cam_servo_value);
 }
 
+double VehicleState::goalOrbit(double rocketX, double rocketY, double X, double Y, double R){
+    // FIX THE RADIANS STUFF TO BE CONSISTENT CW vs CCW, WHERE 0 DEGREES IS DEFINED ETC
+    GPS *gps = reinterpret_cast<GPS *>(getSensor(GPS_));
+    double ke= 1; // determine
+    double targetRadius=R; // meters? determine value as well-->we could consider dynamically changing target radius based on height difference between rocket and payload vehicle
+    double radius=sqrt((rocketY-Y)*(rocketY-Y)+(rocketX-X)*(rocketX-X));
+    double goal = 180/3.14*atan2((rocketY-Y),(rocketX-X))-90; // Goal is 90 degrees CW from vector between
+    double adjusted_goal = goal - constrain(ke*(targetRadius - radius), -40, 40); // Adjust goal based on distance from target
+    return adjusted_goal;
+}
+
 
 void VehicleState::goDirection(double goal){
+
     //See https://github.com/Terrapin-Rocket-Team/SAC-TRT24/blob/main/Code/Payload/Orientation%20Matlab/Orientation.md for
     //the pseudocode
     goal += 180;
