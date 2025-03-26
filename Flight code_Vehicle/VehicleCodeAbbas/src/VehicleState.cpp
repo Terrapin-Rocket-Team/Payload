@@ -32,20 +32,16 @@ void VehicleState::updateState(double newTime)
     determineStage(); // determine the stage of the flight
 }
 
-void VehicleState::determineStage()
-{
-  int timeSinceLaunch = currentTime - timeOfLaunch;
-    IMU *imu = reinterpret_cast<IMU *>(getSensor(IMU_));
-    Barometer *baro = reinterpret_cast<Barometer *>(getSensor(BAROMETER_));
-    //Serial.println(imu->getAccelerationGlobal().z());
-    if(stage == PRELAUNCH && imu->getAccelerationGlobal().z() > 10){
-        getLogger().setRecordMode(FLIGHT);;
-        bb.aonoff(buzzer_pin, 200);
+void VehicleState::determineStage(){
+    mmfs::Barometer *baro = reinterpret_cast<mmfs::Barometer *>(getSensor(mmfs::BAROMETER_));
+    
+    if(stage == PRELAUNCH && acceleration.z() > 40){
+        mmfs::getLogger().setRecordMode(mmfs::FLIGHT);
+        bb.aonoff(mmfs::BUZZER, 200);
         stage = BOOST;
         timeOfLaunch = currentTime;
         timeOfLastStage = currentTime;
-        getLogger().recordLogData(INFO_, "Launch detected.");
-        getLogger().recordLogData(INFO_, "Printing static data.");
+        mmfs::getLogger().recordLogData(mmfs::INFO_, "Launch detected.");
         for (int i = 0; i < maxNumSensors; i++)
         {
             if (sensorOK(sensors[i]))
@@ -54,47 +50,46 @@ void VehicleState::determineStage()
             }
         }
     }
-    else if(stage == BOOST && imu->getAccelerationGlobal().z() < 0){
-        bb.aonoff(buzzer_pin, 200, 2);
+    else if(stage == BOOST && acceleration.z() < 0){
+        bb.aonoff(mmfs::BUZZER, 200, 2);
         timeOfLastStage = currentTime;
         stage = COAST;
-        getLogger().recordLogData(INFO_, "Coasting detected.");
+        mmfs::getLogger().recordLogData(mmfs::INFO_, "Coasting detected.");
     }
-    else if(stage == COAST && baroVelocity <= 0 && timeSinceLaunch > 3){ // TODO fix this, this baroVelocity is not resistant to noise
-        bb.aonoff(buzzer_pin, 200, 2);
+    else if(stage == COAST &&  < .8){ // logic for detecting vehicle ejection
+        bb.aonoff(mmfs::BUZZER, 200, 2);
         timeOfLastStage = currentTime;
         char logData[100];
-        getLogger().recordLogData(INFO_, logData);
+        snprintf(logData, 100, "Ejection detected at %.2f m.", position.z());
+        mmfs::getLogger().recordLogData(mmfs::INFO_, logData);
         stage = ACTUATION;
-        getLogger().recordLogData(INFO_, "Ejection detected.");
+        mmfs::getLogger().recordLogData(mmfs::INFO_, "Ejection Detected - Actuating.");
     }
-    else if(stage == ACTUATION && baroVelocity <= 0 && timeSinceLaunch > 3){ // TODO fix this, this baroVelocity is not resistant to noise
-        bb.aonoff(buzzer_pin, 200, 2);
+    else if(stage == ACTUATION && baro->getAGLAltFt() < 2000 && currentTime - timeOfLastStage > 2){ 
+        bb.aonoff(mmfs::BUZZER, 200, 2);
         timeOfLastStage = currentTime;
-        char logData[100];
-        getLogger().recordLogData(INFO_, logData);
         stage = MAIN;
-        getLogger().recordLogData(INFO_, "Flight detected.");
+        mmfs::getLogger().recordLogData(mmfs::INFO_, "Main detected.");
     }
-    else if(stage == MAIN && ((baro->getAGLAltFt() < 100) || ((currentTime - timeOfLastStage) > 600000))){
-        bb.aonoff(buzzer_pin, 200, 2);
+    else if(stage == MAIN && ((baro->getAGLAltFt() < 100) || ((currentTime - timeOfLastStage) > 60))){
+        bb.aonoff(mmfs::BUZZER, 200, 2);
         timeOfLastStage = currentTime;
         stage = LANDED;
-        getLogger().setRecordMode(GROUND);
-        getLogger().recordLogData(INFO_, "Landing detected.");
+        mmfs::getLogger().recordLogData(mmfs::INFO_, "Landing detected.");
+        mmfs::getLogger().setRecordMode(mmfs::GROUND);
+        mmfs::getLogger().recordLogData(mmfs::INFO_, "Dumped data after landing.");
     }
-    else if (stage == LANDED && currentTime - timeOfLastStage > 60) // TODO check if it can dump data in 60 seconds
+    else if (stage == LANDED && (currentTime - timeOfLastStage) > 60)
     {
-        stage = DUMPED;
-        getLogger().recordLogData(INFO_, "Dumped data after landing.");
+        bb.aonoff(mmfs::BUZZER, 200, 2);
+        stage = PRELAUNCH;
     }
-    else if((stage == PRELAUNCH || stage == BOOST) && baro->getAGLAltFt() > 250){
-        getLogger().setRecordMode(FLIGHT);
-        bb.aonoff(buzzer_pin, 200, 2);
+    else if((stage == PRELAUNCH || stage == BOOST) && (baro->getAGLAltM() > 1500) && (millis() > 60000)){
+        mmfs::getLogger().setRecordMode(mmfs::FLIGHT);
+        bb.aonoff(mmfs::BUZZER, 200, 2);
         timeOfLastStage = currentTime;
         stage = COAST;
-        getLogger().recordLogData(INFO_, "Launch detected. Using Backup Condition.");
-        getLogger().recordLogData(INFO_, "Printing static data.");
+        mmfs::getLogger().recordLogData(mmfs::INFO_, "Launch detected. Using Backup Condition.");
         for (int i = 0; i < maxNumSensors; i++)
         {
             if (sensorOK(sensors[i]))
