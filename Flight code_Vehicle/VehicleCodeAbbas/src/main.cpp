@@ -58,7 +58,7 @@ void loop()
         return;
     timeOfLastUpdate = currentTime;
 
-  if (vehicle.stage == ACTUATION) {
+  if (vehicle.stage == ACTUATION) { //should this be in determineStage() function?
     //digitalWrite(...) scr?
 
     rocketx = gps.getPos()[0]; // set point of ejection as origin to orbit around
@@ -71,6 +71,7 @@ void loop()
     digitalWrite(3, HIGH);
     digitalWrite(4, HIGH);
 
+    vehicle.stage = MAIN;
   }
 
   if (vehicle.stage == MAIN) {

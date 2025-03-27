@@ -160,13 +160,13 @@ Point VehicleState::getTargetCoordinates(){
 
 // Servo Functions
 
-void VehicleState::servoSetup(int leftServoPin,int rightServoPin, int garbge2, double leftSetNeutral,double rightSetNeutral, double garbage){ //input the servo pins, and the value for the servo to be up
+void VehicleState::servoSetup(int leftServoPin,int rightServoPin,int camServoPin, double leftSetNeutral,double rightSetNeutral,double camSetNeutral){ //input the servo pins, and the value for the servo to be up
     left.attach(leftServoPin);
     right.attach(rightServoPin);
-    //pitch.attach(camServoPin);
+    pitch.attach(camServoPin);
     left.write(leftSetNeutral);
     right.write(rightSetNeutral);
-    //pitch.write(camSetNeutral);
+    pitch.write(camSetNeutral);
 }
 
 
