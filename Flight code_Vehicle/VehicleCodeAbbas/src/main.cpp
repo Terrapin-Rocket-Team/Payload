@@ -78,11 +78,16 @@ void loop()
     // Get current orientation
 
     Matrix orientation = vehicle_imu.getOrientation().toMatrix();
-
-    float currentAngle = orientation.get(2,0); //yaw
+    mmfs::Matrix m = vehicle_imu.getOrientation().toMatrix();
+    //double C01 = m.get(0, 1);
+    //double C11 = m.get(1, 1);
+    double C20 = m.get(2,0);
+    
+    
+    double currentAngle=0.8*asin(-C20)*180/3.14 + 0.2*previousAngle; //Running into Sin domain error here
 
     // Calculate error
-    targetAngle = vehicle.goalOrbit(rocketx, rockety, gps.getPos()[0], gps.getPos()[1], 50/111111); //final argument is target radius (converting 50 long/lat to meters)
+    targetAngle = vehicle.goalOrbit(rocketx, rockety, gps.getPos()[0], gps.getPos()[1], 50/111111); //final argument is target radius (converting 50 long/lat to meters - is this right?)
     float error = currentAngle - targetAngle;
 
     Serial.print("Error: ");
@@ -106,8 +111,8 @@ void loop()
     double servoAngle = map(constrain(output,-100,100),-100,100,0,180);
 
     // For actuating:
-    vehicle.left.write(constrain(servoAngle,0,90));
-    vehicle.right.write(constrain(servoAngle,90,180));
+    vehicle.left.write(90 - constrain(servoAngle,0,90));
+    vehicle.right.write(180 - constrain(servoAngle,90,180));
 
 
     Serial.print(", Target: ");
@@ -117,7 +122,14 @@ void loop()
     Serial.print(", rservoval: ");
     Serial.println(vehicle.rightServoValue);
     Serial.print(", lservoval: ");
-    Serial.println(vehicle.leftServoValue);  
+    Serial.println(vehicle.leftServoValue);
+    Vector magstuff = vehicle_imu.getMagField();
+    Serial.print("X magnetic field:");
+    Serial.println(magstuff.x());
+    Serial.print("Y magnetic field:");
+    Serial.println(magstuff.y());
+    Serial.print("Z magnetic field:");
+    Serial.println(magstuff.z());
 
     vehicle.leftServoValue = vehicle.left.read();
     vehicle.rightServoValue = vehicle.right.read();
