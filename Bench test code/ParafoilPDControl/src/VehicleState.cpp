@@ -157,43 +157,19 @@ Point VehicleState::getTargetCoordinates(){
 }
     */
 
-Point VehicleState::getWindCorrectionCoordinates(Point r){
-    // Design and logic in this doc (https://docs.google.com/document/d/1soUME8JDSpf028hsgl010TmuEHOHm2ZJCv7ecYDvrWE/edit)
-    // Input r is the desired heading point w/o wind
-
-    // update wind speed
-    imu::Vector<2> v(velocity.x(), velocity.y());
-    w = v-g;
-
-    //double norm_r = sqrt(r.x*r.x + r.y*r.y);
-    imu::Vector<2> h(r.x, r.y); h.normalize(); // unit vector in the direction of the actual velocity
-    imu::Vector<2> w_h = h.scale(w.dot(h)); // wind vector in direction of desired heading
-    imu::Vector<2> w_c = w-w_h; // cross wind vector
-    imu::Vector<2> h_prime = sqrt((v_s*v_s) + (w_c.magnitude()*w_c.magnitude())); // resultant velocity vector of this wind correction
-    imu::Vector<2> g = h_prime-w_c; // heading vector to go in to account for velocity
-    Point g_point = Point(g.x(), g.y()); //turn g from a 2D imu vector object to a point this doesn't work, velo not pos
-
-    // 90/10 Weighted Average split
-    averageWindCorrectionCoords.x = .9*averageWindCorrectionCoords.x + .1*g_point.x;
-    averageWindCorrectionCoords.y = .9*averageWindCorrectionCoords.y + .1*g_point.y;
-
-    return averageWindCorrectionCoords;
-}
 
 // Servo Functions
 
-void VehicleState::servoSetup(int leftServoPin,int rightServoPin,int camServoPin, double leftSetNeutral,double rightSetNeutral,double camSetNeutral){ //input the servo pins, and the value for the servo to be up
+void VehicleState::servoSetup(int leftServoPin,int rightServoPin, int garbge2, double leftSetNeutral,double rightSetNeutral, double garbage){ //input the servo pins, and the value for the servo to be up
     left.attach(leftServoPin);
     right.attach(rightServoPin);
-    pitch.attach(camServoPin);
+    //pitch.attach(camServoPin);
     left.write(leftSetNeutral);
     right.write(rightSetNeutral);
-    pitch.write(camSetNeutral);
+    //pitch.write(camSetNeutral);
 }
 
-void VehicleState::moveServo(int output) {
-    
-}
+
 
 void VehicleState::moveCam(){
 
