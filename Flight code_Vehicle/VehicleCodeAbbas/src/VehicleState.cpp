@@ -56,7 +56,7 @@ void VehicleState::determineStage(){
         stage = COAST;
         mmfs::getLogger().recordLogData(mmfs::INFO_, "Coasting detected.");
     }
-    else if(stage == COAST &&  < .8){ // logic for detecting vehicle ejection
+    else if(stage == COAST &&  baro->getAGLAltFt() < 1500){ // logic for detecting vehicle ejection
         bb.aonoff(mmfs::BUZZER, 200, 2);
         timeOfLastStage = currentTime;
         char logData[100];
