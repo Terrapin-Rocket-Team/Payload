@@ -1,168 +1,133 @@
 #include <Arduino.h>
-#include <Adafruit_BNO055.h>
 #include <Wire.h>
-#include <Adafruit_Sensor.h>
-#include <Servo.h>
 #include <vector>
+#include "MMFS.h"
+#include "VehicleState.h"
 
 
-int buzzer_pin = 9;
+mmfs::MAX_M10S gps;
+mmfs::MS5611 baro;
+mmfs::BMI088andLIS3MDL vehicle_imu;
+Logger logger;
+Sensor *sensors[] = {&gps, &baro, &vehicle_imu};
 
-int left_servo_pin = 22;
-int right_servo_pin = 23; // figure out which pins are being used
+VehicleState vehicle(sensors, 3, nullptr);
 
-Servo leftServo;
-Servo rightServo;
+MMFSConfig config = MMFSConfig()
+                        .withState(&vehicle)
+                        .withBuzzerPin(13)
+                        .withBBPin(LED_BUILTIN);
 
-Adafruit_BNO055 bno = Adafruit_BNO055(55);
+MMFSSystem computer = MMFSSystem(&config);
 
-// Target angle (in degrees)
-float targetAngle = -60.0;
+float targetAngle;
+float rocketx;
+float rockety;
 
 // PD Controller gains
-float kp = 1; // Proportional gain
-float kd = 1*kp; // Derivative gain
-float ki = 0.2; // Integral gain
+float kp = 0.5; // Proportional gain
+float kd = 0.4; // Derivative gain
 
-
-// Previous error for derivative term
 float previousError = 0.0;
-
-// Time tracking for derivative computation
 unsigned long previousTime = 0;
+int timeOfLastUpdate = 0;
 
-const int UPDATE_RATE = 25;
-const int UPDATE_INTERVAL = 1000.0 / UPDATE_RATE;
+void setup()
+{
+  computer.init();
+  getLogger().recordLogData(mmfs::INFO_, "Entering Setup");  
 
-void setup() {
-  
-  // Start serial communication for debugging
-  Serial.begin(115200);
-  // Initialize the BNO055
-  if (!bno.begin()) {
-    Serial.println("Error initializing BNO055!");
-    while (1);
-  }
-  delay(1000);
-  bno.setExtCrystalUse(true);
-  // Initialize previousTime
-  previousTime = millis();
-  // Arming sequence
-  leftServo.attach(left_servo_pin);
-  delay(250);
-  leftServo.write(90);
-  delay(250);
-  rightServo.attach(right_servo_pin);
-  delay(250);
-  rightServo.write(90);
-  delay(250);
+  vehicle.servoSetup(2,3,4,180,0,90);
+
+  // how many nichrome do we need?
+  // pinMode(4, OUTPUT);
+  // pinMode(5,OUTPUT);
+
   Serial.begin(9600);
-  //set buzzer pin to output
-  pinMode(buzzer_pin, OUTPUT);
-  //beep buzzer twice
-  for(int i = 0; i < 2; i++){
-    digitalWrite(buzzer_pin, HIGH);
-    delay(200);
-    digitalWrite(buzzer_pin, LOW);
-    delay(200);
-  }
+
+  getLogger().recordLogData(mmfs::INFO_, "Leaving Setup");
+
 }
 
-unsigned long lastTime = 0; // Rename time to lastTime
-static double last = 0;
-float integral = 0;
-void loop() {
-  double time = millis();
-  if (time - last < UPDATE_INTERVAL)
+void loop()
+{
+  computer.update();
+
+  int currentTime = millis();
+    if (currentTime - timeOfLastUpdate < UPDATE_INTERVAL)
         return;
-    last = time;
-  // if(millis() - lastTime > 4000){
-  //   if(targetAngle == 300.0){
-  //     targetAngle = 120.0;
-  //   } else {
-  //     targetAngle = 300.0;
-  //   }
-  //   lastTime = millis();
-  // }
-  // Read the current orientation
-  sensors_event_t event;
-  bno.getEvent(&event);
-  
-  // Extract the roll angle
-  float currentAngle = event.orientation.x;
-  float currentAngley = event.orientation.y;
-  float currentAnglez = event.orientation.z-90;
-  Serial.print("currenty =");
-  Serial.println(currentAngley);
-  Serial.print("currentz =");
-  Serial.println(currentAnglez);
-  if(abs(currentAngley) > 45 || abs(currentAnglez) > 45){
-    leftServo.write(90);
-    rightServo.write(90);
-    return;
-  }
-  // Calculate error
-  float error = currentAngle - targetAngle;
-  
-  // Correct for angle wrap and propellor directionality
-  Serial.print("Error: ");
-  Serial.print(error);
-  
-  if(error > 180){
-    error = error - 360;
-
-  }
-
-  Serial.print(", Corrected Error: ");
-  Serial.print(error);
-  
- if(abs(error)>30){
-  digitalWrite(buzzer_pin, LOW);
- }
- else{
-  digitalWrite(buzzer_pin, LOW);
- }
-  // Get current time
-  unsigned long currentTime = millis();
-  float deltaTime = (currentTime - previousTime) / 1000.0; // Convert to seconds
-  
-  // Calculate derivative term
-  float derivative = 0;
-  if (deltaTime > 0) {
-    derivative = -bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE)[1];
-  }
-  // Calculate integral term
-  
-  // PD Controller output
-  float output = kp*constrain(error,-60,60) + (kd * derivative) + (ki * integral);
-  double servoAngle = map(constrain(output,-100,100),-100,100,0,180);
-  // For actuating:
-  leftServo.write(constrain(servoAngle,0,90));
-  rightServo.write(constrain(servoAngle,90,180));
+    timeOfLastUpdate = currentTime;
 
 
-  integral += error * deltaTime;
-  // Set motor speed to zero if a sign change is detected to prevent motor stall
+    // Get current orientation
 
-  // Debugging information
-  Serial.print(", Target: ");
-  Serial.print(targetAngle);
-  Serial.print(", Current: ");
-  Serial.print(currentAngle);
-  Serial.print(", Output: ");
-  Serial.println(servoAngle);
-  //Serial.print("gyroy =");
-  //Serial.println(bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE)[1]);
-  //Serial.print("gyrox =");
-  //Serial.println(bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE)[0]);
-  
-  //Serial.print("gyroz =");
-  //Serial.println(bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE)[2]);
+    Matrix orientation = vehicle_imu.getOrientation().toMatrix();
 
-  // Update previous error and time
-  previousError = error;
-  previousTime = currentTime;
+    float currentAngle = orientation.get(2,0); //yaw
 
-  // Small delay to avoid saturating the loop
-  delay(10);
+    // Calculate error
+    targetAngle = vehicle.goalOrbit(rocketx, rockety, gps.getPos()[0], gps.getPos()[1], 50/111111); //final argument is target radius (converting 50 long/lat to meters)
+    float error = currentAngle - targetAngle;
+
+    Serial.print("Error: ");
+    Serial.print(error);
+
+    if(error > 180){
+      error = error - 360;
+    }
+
+    float deltaTime = (currentTime - previousTime) / 1000.0; // Convert to seconds
+
+    // Calculate derivative term
+    float derivative = 0;
+
+    derivative = (error - previousError)/deltaTime;
+
+    // Calculate integral term
+    // PD Controller output
+
+    float output = kp*constrain(error,-60,60) + (kd * derivative);
+    double servoAngle = map(constrain(output,-100,100),-100,100,0,180);
+
+    // For actuating:
+    vehicle.left.write(constrain(servoAngle,0,90));
+    vehicle.right.write(constrain(servoAngle,90,180));
+
+
+    Serial.print(", Target: ");
+    Serial.print(targetAngle);
+    Serial.print(", Current: ");
+    Serial.print(currentAngle);
+    Serial.print(", rservoval: ");
+    Serial.println(vehicle.rightServoValue);
+    Serial.print(", lservoval: ");
+    Serial.println(vehicle.leftServoValue);  
+
+    vehicle.leftServoValue = vehicle.left.read();
+    vehicle.rightServoValue = vehicle.right.read();
+    vehicle.servoOutput = output;
+    vehicle.vehicleX = gps.getPos()[0];
+    vehicle.vehicleY = gps.getPos()[1];
+    vehicle.currentAngle = currentAngle;
+    vehicle.targetAngle = targetAngle;
+    vehicle.currentAngleY = orientation.get(1,0);
+    vehicle.currentAngleZ = orientation.get(0,0);
+    // vehicle.vehicleSpeedX =  //figure these out
+    // vehicle.vehicleSpeedY = 
+    // vehicle.vehicleSpeedZ = 
+    vehicle.altitude = baro.getAGLAltFt();
+    
+
+
+
+    previousError = error;
+    previousTime = currentTime;
+
+    
+
+    // Small delay to avoid saturating the loop
+    delay(10);
+
+
+
 }
