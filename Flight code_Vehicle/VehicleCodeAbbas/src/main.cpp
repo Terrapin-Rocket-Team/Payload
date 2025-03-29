@@ -16,13 +16,12 @@ VehicleState vehicle(sensors, 3, nullptr);
 MMFSConfig config = MMFSConfig()
                         .withState(&vehicle)
                         .withBuzzerPin(13)
-                        .withBBPin(LED_BUILTIN);
+                        .withBBPin(LED_BUILTIN)
+                        .withUpdateRate(10);
 
 MMFSSystem computer = MMFSSystem(&config);
 
 float targetAngle;
-float rocketx;
-float rockety;
 
 // PD Controller gains
 float kp = 0.5; // Proportional gain
@@ -49,6 +48,8 @@ void setup()
 
 }
 
+double previousAngle = 0;
+
 void loop()
 {
   computer.update();
@@ -58,37 +59,25 @@ void loop()
         return;
     timeOfLastUpdate = currentTime;
 
-  if (vehicle.stage == ACTUATION) { //should this be in determineStage() function?
-    //digitalWrite(...) scr?
-
-    rocketx = gps.getPos()[0]; // set point of ejection as origin to orbit around
-    rockety = gps.getPos()[1];
-
-    delay(2000); //wait for drogue chute to catch completely
-
+  if (vehicle.stage == GLIDING) {
     //nichrome for bag/parafoil
-
     digitalWrite(3, HIGH);
     digitalWrite(4, HIGH);
-
-    vehicle.stage = MAIN;
   }
 
-  if (vehicle.stage == MAIN) {
+  if (vehicle.stage == GLIDING) {
 
     // Get current orientation
-
     Matrix orientation = vehicle_imu.getOrientation().toMatrix();
     mmfs::Matrix m = vehicle_imu.getOrientation().toMatrix();
-    //double C01 = m.get(0, 1);
-    //double C11 = m.get(1, 1);
     double C20 = m.get(2,0);
-    
-    
+    C20 = max(-1.0, min(1.0, C20)); // Clamping to valid range
+
     double currentAngle=0.8*asin(-C20)*180/3.14 + 0.2*previousAngle; //Running into Sin domain error here
+    previousAngle = currentAngle;
 
     // Calculate error
-    targetAngle = vehicle.goalOrbit(rocketx, rockety, gps.getPos()[0], gps.getPos()[1], 50/111111); //final argument is target radius (converting 50 long/lat to meters - is this right?)
+    targetAngle = vehicle.goalOrbit(vehicle.rocketx, vehicle.rockety, gps.getPos()[0], gps.getPos()[1], 50/111111); //final argument is target radius (converting 50 long/lat to meters - is this right?)
     float error = currentAngle - targetAngle;
 
     Serial.print("Error: ");
@@ -124,13 +113,6 @@ void loop()
     Serial.println(vehicle.rightServoValue);
     Serial.print(", lservoval: ");
     Serial.println(vehicle.leftServoValue);
-    Vector magstuff = vehicle_imu.getMagField();
-    Serial.print("X magnetic field:");
-    Serial.println(magstuff.x());
-    Serial.print("Y magnetic field:");
-    Serial.println(magstuff.y());
-    Serial.print("Z magnetic field:");
-    Serial.println(magstuff.z());
 
     vehicle.leftServoValue = vehicle.left.read();
     vehicle.rightServoValue = vehicle.right.read();
@@ -140,22 +122,10 @@ void loop()
     vehicle.currentAngle = currentAngle;
     vehicle.targetAngle = targetAngle;
     vehicle.currentAngleY = orientation.get(1,0);
-    vehicle.currentAngleZ = orientation.get(0,0);
-    // vehicle.vehicleSpeedX =  //figure these out
-    // vehicle.vehicleSpeedY = 
-    // vehicle.vehicleSpeedZ = 
-    vehicle.altitude = baro.getAGLAltFt();
-    
-
-
+    vehicle.currentAngleZ = orientation.get(0,0);  
 
     previousError = error;
     previousTime = currentTime;
-
-    
-
-    // Small delay to avoid saturating the loop
-    delay(10);
 
   }
 

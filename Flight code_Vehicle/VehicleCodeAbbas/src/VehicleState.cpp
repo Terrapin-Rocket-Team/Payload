@@ -19,11 +19,6 @@ VehicleState::VehicleState(Sensor **sensors, int numSensors, Filter *filter) : S
     addColumn(DOUBLE, &targetAngle, "target angle");
     addColumn(DOUBLE, &currentAngleY, "current angle pitch");
     addColumn(DOUBLE, &currentAngleZ, "current angle roll");
-    addColumn(DOUBLE, &vehicleSpeedX, "Vehicle Speed X");
-    addColumn(DOUBLE, &vehicleSpeedY, "Vehicle Speed Y");
-    addColumn(DOUBLE, &vehicleSpeedZ, "Vehicle Speed Z");
-    addColumn(DOUBLE, &altitude, "Altitude");
-
 }
 
 void VehicleState::updateState(double newTime)
@@ -34,8 +29,9 @@ void VehicleState::updateState(double newTime)
 
 void VehicleState::determineStage(){
     mmfs::Barometer *baro = reinterpret_cast<mmfs::Barometer *>(getSensor(mmfs::BAROMETER_));
+    mmfs::GPS *gps = reinterpret_cast<mmfs::GPS *>(getSensor(mmfs::GPS_));
     
-    if(stage == PRELAUNCH && acceleration.z() > 40){
+    if(stage == PRELAUNCH && acceleration.magnitude() > 40){
         mmfs::getLogger().setRecordMode(mmfs::FLIGHT);
         bb.aonoff(mmfs::BUZZER, 200);
         stage = BOOST;
@@ -56,22 +52,34 @@ void VehicleState::determineStage(){
         stage = COAST;
         mmfs::getLogger().recordLogData(mmfs::INFO_, "Coasting detected.");
     }
-    else if(stage == COAST &&  baro->getAGLAltFt() < 1500){ // logic for detecting vehicle ejection
+    else if (stage == COAST && velocity.z() <= 0 && (currentTime - timeOfLastStage) > 5) {
+        bb.aonoff(mmfs::BUZZER, 200, 2);
+        timeOfLastStage = currentTime;
+        char logData[100];
+        snprintf(logData, 100, "Apogee detected at %.2f m.", position.z());
+        mmfs::getLogger().recordLogData(mmfs::INFO_, logData);
+        stage = DROGUE;
+        mmfs::getLogger().recordLogData(mmfs::INFO_, "Drogue detected.");
+    }
+    else if(stage == DROGUE &&  baro->getAGLAltFt() < 1500){ // logic for detecting vehicle ejection
         bb.aonoff(mmfs::BUZZER, 200, 2);
         timeOfLastStage = currentTime;
         char logData[100];
         snprintf(logData, 100, "Ejection detected at %.2f m.", position.z());
         mmfs::getLogger().recordLogData(mmfs::INFO_, logData);
-        stage = ACTUATION;
+        stage = EJECTED;
         mmfs::getLogger().recordLogData(mmfs::INFO_, "Ejection Detected - Actuating.");
+
+        rocketx = gps->getPos()[0]; // set point of ejection as origin to orbit around
+        rockety = gps->getPos()[1];
     }
-    else if(stage == ACTUATION && baro->getAGLAltFt() < 2000 && currentTime - timeOfLastStage > 2){ 
+    else if(stage == EJECTED && currentTime - timeOfLastStage > 2){ 
         bb.aonoff(mmfs::BUZZER, 200, 2);
         timeOfLastStage = currentTime;
-        stage = MAIN;
-        mmfs::getLogger().recordLogData(mmfs::INFO_, "Main detected.");
+        stage = GLIDING;
+        mmfs::getLogger().recordLogData(mmfs::INFO_, "GLIDING detected.");
     }
-    else if(stage == MAIN && ((baro->getAGLAltFt() < 100) || ((currentTime - timeOfLastStage) > 60))){
+    else if(stage == GLIDING && ((baro->getAGLAltFt() < 100) || ((currentTime - timeOfLastStage) > 60))){
         bb.aonoff(mmfs::BUZZER, 200, 2);
         timeOfLastStage = currentTime;
         stage = LANDED;
@@ -202,7 +210,6 @@ void VehicleState::moveCam(){
 
 double VehicleState::goalOrbit(double rocketX, double rocketY, double X, double Y, double R){
     // FIX THE RADIANS STUFF TO BE CONSISTENT CW vs CCW, WHERE 0 DEGREES IS DEFINED ETC
-    GPS *gps = reinterpret_cast<GPS *>(getSensor(GPS_));
     double ke= 1; // determine
     double targetRadius=R; // meters? determine value as well-->we could consider dynamically changing target radius based on height difference between rocket and payload vehicle
     double radius=sqrt((rocketY-Y)*(rocketY-Y)+(rocketX-X)*(rocketX-X));

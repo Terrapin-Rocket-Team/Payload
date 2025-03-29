@@ -6,12 +6,13 @@
 #include "Servo.h"
 
 
-enum VehcileStages { // TODO update this
+enum VehcileStages {
     PRELAUNCH,
     BOOST, //Rocket accelerating upwards
     COAST, //Rocket coasting
-    ACTUATION, //Vehicle Ejected
-    MAIN, //Vehicle Gliding
+    DROGUE,
+    EJECTED, //Vehicle Ejected
+    GLIDING, //Vehicle Gliding
     LANDED, //Vehicle Landed
     DUMPED
 };
@@ -41,6 +42,9 @@ class VehicleState : public State {
 
         double left_servo_value;
         double right_servo_value; 
+
+        double rocketx;
+        double rockety;
 
         imu::Vector<2> g; // wind speed in m/s (2D velocity vector) bad comment
         imu::Vector<2> w; // wind speed in m/s (2D velocity vector)
