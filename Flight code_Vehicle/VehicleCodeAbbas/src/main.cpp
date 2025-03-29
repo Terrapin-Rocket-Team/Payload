@@ -30,6 +30,7 @@ float kd = 0.4; // Derivative gain
 float previousError = 0.0;
 unsigned long previousTime = 0;
 int timeOfLastUpdate = 0;
+double servoAngle;
 
 void setup()
 {
@@ -53,7 +54,7 @@ double previousAngle = 0;
 void loop()
 {
   if (computer.update()){
-    if (vehicle.stage == GLIDING) {
+    if (vehicle.stage == DROGUE) {
       //nichrome for bag/parafoil
       digitalWrite(3, HIGH);
       digitalWrite(4, HIGH);
@@ -61,45 +62,46 @@ void loop()
   
     if (vehicle.stage == GLIDING) {
   
-      // Get current orientation
-      Matrix orientation = vehicle_imu.getOrientation().toMatrix();
-      mmfs::Matrix m = vehicle_imu.getOrientation().toMatrix();
-      double C20 = m.get(2,0);
-      C20 = max(-1.0, min(1.0, C20)); // Clamping to valid range
+      // // Get current orientation
+      // Matrix orientation = vehicle_imu.getOrientation().toMatrix();
+      // mmfs::Matrix m = vehicle_imu.getOrientation().toMatrix();
+      // double C20 = m.get(2,0);
+      // C20 = max(-1.0, min(1.0, C20)); // Clamping to valid range
   
-      double currentAngle=0.8*asin(-C20)*180/3.14 + 0.2*previousAngle; //Running into Sin domain error here
-      previousAngle = currentAngle;
+      // double currentAngle=0.8*asin(-C20)*180/3.14 + 0.2*previousAngle; //Running into Sin domain error here
+      // previousAngle = currentAngle;
   
-      // Calculate error
-      targetAngle = vehicle.goalOrbit(vehicle.rocketx, vehicle.rockety, gps.getPos()[0], gps.getPos()[1], 50/111111); //final argument is target radius (converting 50 long/lat to meters - is this right?)
-      float error = currentAngle - targetAngle;
+      // // Calculate error
+      // targetAngle = vehicle.goalOrbit(vehicle.rocketx, vehicle.rockety, gps.getPos()[0], gps.getPos()[1], 50/111111); //final argument is target radius (converting 50 long/lat to meters - is this right?)
+      // float error = currentAngle - targetAngle;
   
-      Serial.print("Error: ");
-      Serial.print(error);
+      // Serial.print("Error: ");
+      // Serial.print(error);
   
-      if(error > 180){
-        error = error - 360;
-      }
+      // if(error > 180){
+      //   error = error - 360;
+      // }
   
-      // Calculate derivative term
-      float derivative = 0;
+      // // Calculate derivative term
+      // float derivative = 0;
   
-      derivative = (error - previousError)/(UPDATE_INTERVAL/1000);
+      // derivative = (error - previousError)/(UPDATE_INTERVAL/1000);
   
-      // Calculate integral term
-      // PD Controller output
+      // // Calculate integral term
+      // // PD Controller output
   
-      float output = kp*constrain(error,-60,60) + (kd * derivative);
-      double servoAngle = map(constrain(output,-100,100),-100,100,0,180);
+      // float output = kp*constrain(error,-60,60) + (kd * derivative);
+      // double servoAngle = map(constrain(output,-100,100),-100,100,0,180);
   
       // For actuating:
+      servoAngle = 0;
       vehicle.left.write(90 - constrain(servoAngle,0,90));
       vehicle.right.write(180 - constrain(servoAngle,90,180));
   
       Serial.print(", Target: ");
       Serial.print(targetAngle);
       Serial.print(", Current: ");
-      Serial.print(currentAngle);
+      //Serial.print(currentAngle);
       Serial.print(", rservoval: ");
       Serial.println(vehicle.rightServoValue);
       Serial.print(", lservoval: ");
@@ -107,19 +109,18 @@ void loop()
   
       vehicle.leftServoValue = vehicle.left.read();
       vehicle.rightServoValue = vehicle.right.read();
-      vehicle.servoOutput = output;
+      //vehicle.servoOutput = output;
       vehicle.vehicleX = gps.getPos()[0];
       vehicle.vehicleY = gps.getPos()[1];
-      vehicle.currentAngle = currentAngle;
+      //vehicle.currentAngle = currentAngle;
       vehicle.targetAngle = targetAngle;
-      vehicle.currentAngleY = orientation.get(1,0);
-      vehicle.currentAngleZ = orientation.get(0,0);  
+      //vehicle.currentAngleY = orientation.get(1,0);
+      //vehicle.currentAngleZ = orientation.get(0,0);  
   
-      previousError = error;
+      //previousError = error;
   
     }
-  } else {
-    return;
-  }
+
+}
 
 }
