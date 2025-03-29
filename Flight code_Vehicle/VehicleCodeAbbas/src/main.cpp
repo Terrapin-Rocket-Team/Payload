@@ -30,7 +30,7 @@ float kd = 0.4; // Derivative gain
 float previousError = 0.0;
 unsigned long previousTime = 0;
 int timeOfLastUpdate = 0;
-double servoAngle;
+double servoAngle=60;
 
 void setup()
 {
@@ -54,7 +54,7 @@ double previousAngle = 0;
 void loop()
 {
   if (computer.update()){
-    if (vehicle.stage == DROGUE) {
+    if (vehicle.stage == GLIDING) {
       //nichrome for bag/parafoil
       digitalWrite(3, HIGH);
       digitalWrite(4, HIGH);
@@ -94,7 +94,6 @@ void loop()
       // double servoAngle = map(constrain(output,-100,100),-100,100,0,180);
   
       // For actuating:
-      servoAngle = 0;
       vehicle.left.write(90 - constrain(servoAngle,0,90));
       vehicle.right.write(180 - constrain(servoAngle,90,180));
   
