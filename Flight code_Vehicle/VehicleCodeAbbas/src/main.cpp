@@ -40,8 +40,8 @@ void setup()
   vehicle.servoSetup(2,3,4,180,0,90);
 
   // how many nichrome do we need?
-  pinMode(4, OUTPUT);
-  pinMode(5,OUTPUT);
+  // pinMode(4, OUTPUT);
+  // pinMode(5,OUTPUT);
 
   Serial.begin(9600);
 
@@ -54,11 +54,11 @@ double previousAngle = 0;
 void loop()
 {
   if (computer.update()){
-    if (vehicle.stage == GLIDING) {
-      //nichrome for bag/parafoil
-      digitalWrite(3, HIGH);
-      digitalWrite(4, HIGH);
-    }
+    // if (vehicle.stage == GLIDING) {
+    //   //nichrome for bag/parafoil
+    //   digitalWrite(3, HIGH);
+    //   digitalWrite(4, HIGH);
+    // }
   
     if (vehicle.stage == GLIDING) {
   
