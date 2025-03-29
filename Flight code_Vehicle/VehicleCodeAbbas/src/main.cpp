@@ -52,81 +52,74 @@ double previousAngle = 0;
 
 void loop()
 {
-  computer.update();
-
-  int currentTime = millis();
-    if (currentTime - timeOfLastUpdate < UPDATE_INTERVAL)
-        return;
-    timeOfLastUpdate = currentTime;
-
-  if (vehicle.stage == GLIDING) {
-    //nichrome for bag/parafoil
-    digitalWrite(3, HIGH);
-    digitalWrite(4, HIGH);
-  }
-
-  if (vehicle.stage == GLIDING) {
-
-    // Get current orientation
-    Matrix orientation = vehicle_imu.getOrientation().toMatrix();
-    mmfs::Matrix m = vehicle_imu.getOrientation().toMatrix();
-    double C20 = m.get(2,0);
-    C20 = max(-1.0, min(1.0, C20)); // Clamping to valid range
-
-    double currentAngle=0.8*asin(-C20)*180/3.14 + 0.2*previousAngle; //Running into Sin domain error here
-    previousAngle = currentAngle;
-
-    // Calculate error
-    targetAngle = vehicle.goalOrbit(vehicle.rocketx, vehicle.rockety, gps.getPos()[0], gps.getPos()[1], 50/111111); //final argument is target radius (converting 50 long/lat to meters - is this right?)
-    float error = currentAngle - targetAngle;
-
-    Serial.print("Error: ");
-    Serial.print(error);
-
-    if(error > 180){
-      error = error - 360;
+  if (computer.update()){
+    if (vehicle.stage == GLIDING) {
+      //nichrome for bag/parafoil
+      digitalWrite(3, HIGH);
+      digitalWrite(4, HIGH);
     }
-
-    float deltaTime = (currentTime - previousTime) / 1000.0; // Convert to seconds
-
-    // Calculate derivative term
-    float derivative = 0;
-
-    derivative = (error - previousError)/deltaTime;
-
-    // Calculate integral term
-    // PD Controller output
-
-    float output = kp*constrain(error,-60,60) + (kd * derivative);
-    double servoAngle = map(constrain(output,-100,100),-100,100,0,180);
-
-    // For actuating:
-    vehicle.left.write(90 - constrain(servoAngle,0,90));
-    vehicle.right.write(180 - constrain(servoAngle,90,180));
-
-
-    Serial.print(", Target: ");
-    Serial.print(targetAngle);
-    Serial.print(", Current: ");
-    Serial.print(currentAngle);
-    Serial.print(", rservoval: ");
-    Serial.println(vehicle.rightServoValue);
-    Serial.print(", lservoval: ");
-    Serial.println(vehicle.leftServoValue);
-
-    vehicle.leftServoValue = vehicle.left.read();
-    vehicle.rightServoValue = vehicle.right.read();
-    vehicle.servoOutput = output;
-    vehicle.vehicleX = gps.getPos()[0];
-    vehicle.vehicleY = gps.getPos()[1];
-    vehicle.currentAngle = currentAngle;
-    vehicle.targetAngle = targetAngle;
-    vehicle.currentAngleY = orientation.get(1,0);
-    vehicle.currentAngleZ = orientation.get(0,0);  
-
-    previousError = error;
-    previousTime = currentTime;
-
+  
+    if (vehicle.stage == GLIDING) {
+  
+      // Get current orientation
+      Matrix orientation = vehicle_imu.getOrientation().toMatrix();
+      mmfs::Matrix m = vehicle_imu.getOrientation().toMatrix();
+      double C20 = m.get(2,0);
+      C20 = max(-1.0, min(1.0, C20)); // Clamping to valid range
+  
+      double currentAngle=0.8*asin(-C20)*180/3.14 + 0.2*previousAngle; //Running into Sin domain error here
+      previousAngle = currentAngle;
+  
+      // Calculate error
+      targetAngle = vehicle.goalOrbit(vehicle.rocketx, vehicle.rockety, gps.getPos()[0], gps.getPos()[1], 50/111111); //final argument is target radius (converting 50 long/lat to meters - is this right?)
+      float error = currentAngle - targetAngle;
+  
+      Serial.print("Error: ");
+      Serial.print(error);
+  
+      if(error > 180){
+        error = error - 360;
+      }
+  
+      // Calculate derivative term
+      float derivative = 0;
+  
+      derivative = (error - previousError)/(UPDATE_INTERVAL/1000);
+  
+      // Calculate integral term
+      // PD Controller output
+  
+      float output = kp*constrain(error,-60,60) + (kd * derivative);
+      double servoAngle = map(constrain(output,-100,100),-100,100,0,180);
+  
+      // For actuating:
+      vehicle.left.write(90 - constrain(servoAngle,0,90));
+      vehicle.right.write(180 - constrain(servoAngle,90,180));
+  
+      Serial.print(", Target: ");
+      Serial.print(targetAngle);
+      Serial.print(", Current: ");
+      Serial.print(currentAngle);
+      Serial.print(", rservoval: ");
+      Serial.println(vehicle.rightServoValue);
+      Serial.print(", lservoval: ");
+      Serial.println(vehicle.leftServoValue);
+  
+      vehicle.leftServoValue = vehicle.left.read();
+      vehicle.rightServoValue = vehicle.right.read();
+      vehicle.servoOutput = output;
+      vehicle.vehicleX = gps.getPos()[0];
+      vehicle.vehicleY = gps.getPos()[1];
+      vehicle.currentAngle = currentAngle;
+      vehicle.targetAngle = targetAngle;
+      vehicle.currentAngleY = orientation.get(1,0);
+      vehicle.currentAngleZ = orientation.get(0,0);  
+  
+      previousError = error;
+  
+    }
+  } else {
+    return;
   }
 
 }
