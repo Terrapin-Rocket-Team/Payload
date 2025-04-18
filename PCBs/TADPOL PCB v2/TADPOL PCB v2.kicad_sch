@@ -3212,304 +3212,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Transistor_FET:IRLZ44N"
-			(pin_names
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "Q"
-				(at 5.08 1.905 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Value" "IRLZ44N"
-				(at 5.08 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
-				(at 5.08 -1.905 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-						(italic yes)
-					)
-					(justify left)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "http://www.irf.com/product-info/datasheets/data/irlz44n.pdf"
-				(at 5.08 -3.81 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-					(hide yes)
-				)
-			)
-			(property "Description" "47A Id, 55V Vds, 22mOhm Rds Single N-Channel HEXFET Power MOSFET, TO-220AB"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "N-Channel HEXFET MOSFET Logic-Level"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "TO?220*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "IRLZ44N_0_1"
-				(polyline
-					(pts
-						(xy 0.254 1.905) (xy 0.254 -1.905)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.254 0) (xy -2.54 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.762 2.286) (xy 0.762 1.27)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.762 0.508) (xy 0.762 -0.508)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.762 -1.27) (xy 0.762 -2.286)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.762 -1.778) (xy 3.302 -1.778) (xy 3.302 1.778) (xy 0.762 1.778)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.016 0) (xy 2.032 0.381) (xy 2.032 -0.381) (xy 1.016 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(circle
-					(center 1.651 0)
-					(radius 2.794)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 2.54) (xy 2.54 1.778)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.54 1.778)
-					(radius 0.254)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(circle
-					(center 2.54 -1.778)
-					(radius 0.254)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 -2.54) (xy 2.54 0) (xy 0.762 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.794 0.508) (xy 2.921 0.381) (xy 3.683 0.381) (xy 3.81 0.254)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 3.302 0.381) (xy 2.921 -0.254) (xy 3.683 -0.254) (xy 3.302 0.381)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "IRLZ44N_1_1"
-				(pin input line
-					(at -5.08 0 0)
-					(length 2.54)
-					(name "G"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 2.54 5.08 270)
-					(length 2.54)
-					(name "D"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 2.54 -5.08 90)
-					(length 2.54)
-					(name "S"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "power:+3.3V"
 			(power)
 			(pin_numbers
@@ -3863,70 +3565,60 @@
 		)
 	)
 	(junction
-		(at 78.74 144.78)
+		(at 30.48 148.59)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "41be024d-8dda-4e1b-bccc-d91849cf09bc")
+		(uuid "4f17f9d0-52b5-47d9-a440-2d3ee09954b9")
 	)
 	(wire
 		(pts
-			(xy 80.01 167.64) (xy 72.39 167.64)
+			(xy 30.48 148.59) (xy 30.48 161.29)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "0175c841-4c8e-4529-b62d-4c5a07048ab1")
+		(uuid "310654dd-5258-43e0-bcb9-93fee595c32d")
 	)
 	(wire
 		(pts
-			(xy 78.74 144.78) (xy 82.55 144.78)
+			(xy 30.48 148.59) (xy 49.53 148.59)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "22050a15-e522-41e3-8fe8-de4257517d7e")
+		(uuid "4c1ad2b3-78b2-43ed-8b66-aa05a361b2df")
 	)
 	(wire
 		(pts
-			(xy 45.72 162.56) (xy 57.15 162.56)
+			(xy 49.53 142.24) (xy 57.15 142.24)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "4f83f4d0-31ea-4dbb-ab60-4d11246da829")
+		(uuid "91d22238-17fa-4c4a-8080-57737baf020a")
 	)
 	(wire
 		(pts
-			(xy 72.39 144.78) (xy 78.74 144.78)
+			(xy 30.48 143.51) (xy 30.48 148.59)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "e52d8e13-b17e-465b-8a5e-9fe8d05aa858")
+		(uuid "9abf1fbd-8a88-4fc3-837d-e11ea2184ecc")
 	)
 	(wire
 		(pts
-			(xy 73.66 72.39) (xy 83.82 72.39)
+			(xy 49.53 148.59) (xy 49.53 142.24)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "eaf89cb8-2b20-4628-85e9-9ff620022e21")
-	)
-	(wire
-		(pts
-			(xy 78.74 144.78) (xy 78.74 153.67)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f66acf9f-c7c5-45ac-a459-f9494457ee4b")
+		(uuid "b1e3f03f-b151-46bd-ae3e-13d63c179579")
 	)
 	(global_label "CS"
 		(shape input)
@@ -3950,9 +3642,9 @@
 			)
 		)
 	)
-	(global_label "Vehicle_On"
+	(global_label "Vehicle_Off"
 		(shape input)
-		(at 40.64 154.94 90)
+		(at 72.39 162.56 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3960,9 +3652,9 @@
 			)
 			(justify left)
 		)
-		(uuid "0a826d8b-b5a6-46b8-8ef0-60b5e34e7896")
+		(uuid "0b63b3ae-e7de-45ea-999a-02ffc0a57eaa")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 40.64 141.7343 90)
+			(at 85.8981 162.56 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3974,22 +3666,22 @@
 	)
 	(global_label "VIN"
 		(shape input)
-		(at 57.15 142.24 180)
+		(at 30.48 128.27 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right)
+			(justify left)
 		)
 		(uuid "0ce6d259-d940-4892-8d2c-828b57175c76")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 51.1409 142.24 0)
+			(at 30.48 122.2609 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify right)
+				(justify left)
 				(hide yes)
 			)
 		)
@@ -4126,28 +3818,6 @@
 			)
 		)
 	)
-	(global_label "Vehicle_Off"
-		(shape input)
-		(at 85.09 175.26 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "1d911a41-d099-4fd1-85b6-860d2f680624")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 85.09 188.7681 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "TX_SERIAL"
 		(shape input)
 		(at 43.18 39.37 0)
@@ -4161,6 +3831,28 @@
 		(uuid "1f61a8ce-c7a9-41fa-a6c0-a481b5180459")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 55.6599 39.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "Vehicle_Off"
+		(shape input)
+		(at 72.39 102.87 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "24268073-04c9-4bca-9492-abf310d1b58e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 85.8981 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4232,6 +3924,28 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "Vehicle_On"
+		(shape input)
+		(at 57.15 167.64 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "297fb77f-a2f8-41f3-a0fe-2d8deb750383")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 43.9443 167.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 				(hide yes)
 			)
 		)
@@ -4469,28 +4183,6 @@
 		(uuid "7c7ecb88-6821-4a02-9182-9e76852cf157")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 164.5171 39.37 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "VIN"
-		(shape input)
-		(at 76.2 153.67 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "7f156c36-d087-4e10-bb97-19ea1f7d4e1a")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 76.2 147.6609 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4786,28 +4478,6 @@
 			)
 		)
 	)
-	(global_label "PWM_SERVO3"
-		(shape input)
-		(at 74.93 62.23 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "bbaf6936-a763-4bf7-be2e-4305712ef489")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 90.3127 62.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "GPIO3"
 		(shape input)
 		(at 153.67 72.39 0)
@@ -5028,28 +4698,6 @@
 			)
 		)
 	)
-	(global_label "Vehicle_Off"
-		(shape input)
-		(at 153.67 31.75 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "eacc8afe-c497-4bfa-a264-7b7852142111")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 167.1781 31.75 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "GPIO2"
 		(shape input)
 		(at 153.67 74.93 0)
@@ -5138,28 +4786,6 @@
 			)
 		)
 	)
-	(global_label "Nichrome_1"
-		(shape input)
-		(at 88.9 80.01 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "fcec8174-aa96-4926-afc2-64f05bb7e95b")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 88.9 94.0623 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "SDN"
 		(shape input)
 		(at 153.67 52.07 0)
@@ -5201,77 +4827,6 @@
 				)
 				(justify left)
 				(hide yes)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:Conn_01x03_Socket")
-		(at 69.85 59.69 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "01ac4238-bdaf-49d4-bead-ea2e4bb9aa45")
-		(property "Reference" "J9"
-			(at 70.485 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Servo 3"
-			(at 70.485 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical"
-			(at 69.85 59.69 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 69.85 59.69 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x03, script generated"
-			(at 69.85 59.69 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "cbe924b6-df1f-42ff-8f35-81480b894bfc")
-		)
-		(pin "1"
-			(uuid "e20903bd-8dbb-4e8c-a8c7-2e078919d53b")
-		)
-		(pin "3"
-			(uuid "be139803-4592-4cdc-86e9-df8d14015b4f")
-		)
-		(instances
-			(project "TADPOL PCB v2"
-				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
-					(reference "J9")
-					(unit 1)
-				)
 			)
 		)
 	)
@@ -5474,72 +5029,6 @@
 			(project "TADPOL PCB v2"
 				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
 					(reference "H1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 73.66 74.93 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "07800f78-fbdd-4dbc-85a6-f9289f691320")
-		(property "Reference" "#PWR09"
-			(at 80.01 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 77.47 74.9299 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 73.66 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 73.66 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 73.66 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "83e6cc98-cf56-48ac-bcae-d55607d6f9de")
-		)
-		(instances
-			(project "TADPOL PCB v2"
-				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
-					(reference "#PWR09")
 					(unit 1)
 				)
 			)
@@ -5750,16 +5239,17 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 72.39 162.56 90)
+		(lib_id "power:+5V")
+		(at 72.39 167.64 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "1573a8ff-3edb-4b56-b22d-bce06629505f")
-		(property "Reference" "#PWR013"
-			(at 78.74 162.56 0)
+		(fields_autoplaced yes)
+		(uuid "15e37874-6216-48f2-b33d-4fa71fca6ee5")
+		(property "Reference" "#PWR09"
+			(at 68.58 167.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5767,17 +5257,17 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "GND"
-			(at 76.2 162.5599 90)
+		(property "Value" "+5V"
+			(at 76.2 167.6399 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify right)
+				(justify left)
 			)
 		)
 		(property "Footprint" ""
-			(at 72.39 162.56 0)
+			(at 72.39 167.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5786,7 +5276,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 72.39 162.56 0)
+			(at 72.39 167.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5794,8 +5284,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 72.39 162.56 0)
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
+			(at 72.39 167.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5804,12 +5294,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "ce81829a-882f-4b1b-ab2d-6432ed575418")
+			(uuid "6ff3e378-b21f-4562-9281-d9150f5bce3d")
 		)
 		(instances
 			(project "TADPOL PCB v2"
 				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
-					(reference "#PWR013")
+					(reference "#PWR09")
 					(unit 1)
 				)
 			)
@@ -5881,7 +5371,7 @@
 	)
 	(symbol
 		(lib_id "Connector:Conn_01x02_Socket")
-		(at 78.74 158.75 270)
+		(at 33.02 166.37 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5890,7 +5380,7 @@
 		(fields_autoplaced yes)
 		(uuid "1b798ce9-c536-484e-ba94-3dcc86087dca")
 		(property "Reference" "J13"
-			(at 80.01 156.8449 90)
+			(at 34.29 164.4649 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5899,7 +5389,7 @@
 			)
 		)
 		(property "Value" "Bypass"
-			(at 80.01 159.3849 90)
+			(at 34.29 167.0049 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5908,7 +5398,7 @@
 			)
 		)
 		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical"
-			(at 78.74 158.75 0)
+			(at 33.02 166.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5917,7 +5407,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 78.74 158.75 0)
+			(at 33.02 166.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5926,7 +5416,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x02, script generated"
-			(at 78.74 158.75 0)
+			(at 33.02 166.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6014,6 +5504,71 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 57.15 162.56 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "1e64b333-951e-454d-acfe-2ca7a8e9050a")
+		(property "Reference" "#PWR035"
+			(at 50.8 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 52.07 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 57.15 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 57.15 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 57.15 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a0a86bcf-e270-42b6-a6c6-be63716d7cc9")
+		)
+		(instances
+			(project "TADPOL PCB v2"
+				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
+					(reference "#PWR035")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+5V")
 		(at 43.18 121.92 270)
 		(unit 1)
@@ -6081,6 +5636,72 @@
 		)
 	)
 	(symbol
+		(lib_id "power:+5V")
+		(at 33.02 161.29 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "421793a5-78e9-4521-9f8c-cdb173ac91bd")
+		(property "Reference" "#PWR06"
+			(at 33.02 165.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 33.02 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 33.02 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 33.02 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
+			(at 33.02 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a77f2e90-1f19-4d05-9953-2aac231e6183")
+		)
+		(instances
+			(project "TADPOL PCB v2"
+				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
+					(reference "#PWR06")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+3.3V")
 		(at 153.67 29.21 270)
 		(unit 1)
@@ -6142,213 +5763,6 @@
 			(project "TADPOL PCB v2"
 				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
 					(reference "#PWR019")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Transistor_FET:IRLZ44N")
-		(at 40.64 160.02 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "4ce7854e-5bb3-4308-986e-fdc6b6415336")
-		(property "Reference" "Q3"
-			(at 40.64 166.37 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Vehicle On"
-			(at 40.64 168.91 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
-			(at 38.735 165.1 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://www.irf.com/product-info/datasheets/data/irlz44n.pdf"
-			(at 36.83 165.1 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Description" "47A Id, 55V Vds, 22mOhm Rds Single N-Channel HEXFET Power MOSFET, TO-220AB"
-			(at 40.64 160.02 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "3"
-			(uuid "04a0acc2-e9ee-4e09-937a-4dc7a562a030")
-		)
-		(pin "1"
-			(uuid "009c2888-3a16-4685-82ef-367ceffce496")
-		)
-		(pin "2"
-			(uuid "b1b6582a-0880-4830-bf8f-5bc6c37d2ac8")
-		)
-		(instances
-			(project "TADPOL PCB v2"
-				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
-					(reference "Q3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 57.15 167.64 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "519166c3-e53b-4be1-940a-8fd56886df9a")
-		(property "Reference" "#PWR028"
-			(at 50.8 167.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 53.34 167.6401 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 57.15 167.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 57.15 167.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 57.15 167.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "12f9d7c6-3322-4bd1-b42e-c7b9151d42c8")
-		)
-		(instances
-			(project "TADPOL PCB v2"
-				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
-					(reference "#PWR028")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+5V")
-		(at 97.79 144.78 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "5684b9f4-0edd-4a31-8dd4-7b80eabee9af")
-		(property "Reference" "#PWR014"
-			(at 93.98 144.78 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+5V"
-			(at 101.6 144.7799 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 97.79 144.78 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 97.79 144.78 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 97.79 144.78 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "8bacf282-d33d-4e48-94fc-2718f2c83ff1")
-		)
-		(instances
-			(project "TADPOL PCB v2"
-				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
-					(reference "#PWR014")
 					(unit 1)
 				)
 			)
@@ -6826,73 +6240,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+5V")
-		(at 93.98 72.39 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "646a9beb-3e06-4344-b543-d9729f462d5e")
-		(property "Reference" "#PWR034"
-			(at 90.17 72.39 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+5V"
-			(at 97.79 72.3899 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 93.98 72.39 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 93.98 72.39 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 93.98 72.39 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "7523636b-d4ec-4707-b015-5217df25ed10")
-		)
-		(instances
-			(project "TADPOL PCB v2"
-				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
-					(reference "#PWR034")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 43.18 119.38 90)
 		(unit 1)
@@ -6954,6 +6301,73 @@
 			(project "TADPOL PCB v2"
 				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
 					(reference "#PWR020")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 72.39 100.33 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "72d5574a-deee-4c58-935a-470581659de7")
+		(property "Reference" "#PWR034"
+			(at 78.74 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 76.2 100.3299 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 72.39 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 72.39 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 72.39 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "726e6267-bfbf-4a9f-9cbc-fc5a63a46616")
+		)
+		(instances
+			(project "TADPOL PCB v2"
+				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
+					(reference "#PWR034")
 					(unit 1)
 				)
 			)
@@ -7315,74 +6729,8 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 90.17 152.4 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "94318d14-2871-4e0e-9bfd-3b1f56f8f49e")
-		(property "Reference" "#PWR012"
-			(at 90.17 158.75 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 90.1701 156.21 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 90.17 152.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 90.17 152.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 90.17 152.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "0f7d6f38-2547-47ac-8bba-d052b4aef6bb")
-		)
-		(instances
-			(project "TADPOL PCB v2"
-				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
-					(reference "#PWR012")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Regulator_Linear:L7805")
-		(at 90.17 144.78 0)
+		(at 30.48 135.89 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7391,7 +6739,7 @@
 		(fields_autoplaced yes)
 		(uuid "96ddb51f-b5fd-419a-96c2-5ca3f54c5aef")
 		(property "Reference" "VoltRegulator5V1"
-			(at 90.17 138.43 0)
+			(at 36.83 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7399,7 +6747,7 @@
 			)
 		)
 		(property "Value" "L7805"
-			(at 90.17 140.97 0)
+			(at 34.29 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7407,7 +6755,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
-			(at 90.805 148.59 0)
+			(at 26.67 136.525 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7418,7 +6766,7 @@
 			)
 		)
 		(property "Datasheet" "http://www.st.com/content/ccc/resource/technical/document/datasheet/41/4f/b3/b0/12/d4/47/88/CD00000444.pdf/files/CD00000444.pdf/jcr:content/translations/en.CD00000444.pdf"
-			(at 90.17 146.05 0)
+			(at 29.21 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7427,7 +6775,7 @@
 			)
 		)
 		(property "Description" "Positive 1.5A 35V Linear Regulator, Fixed Output 5V, TO-220/TO-263/TO-252"
-			(at 90.17 144.78 0)
+			(at 30.48 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7718,214 +7066,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+5V")
-		(at 74.93 59.69 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "a46974c8-0b2d-4dca-8104-63bb6797adca")
-		(property "Reference" "#PWR027"
-			(at 71.12 59.69 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+5V"
-			(at 78.74 59.6899 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 74.93 59.69 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 74.93 59.69 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 74.93 59.69 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "efa85afd-7a98-4b5b-9a7c-fa0545228874")
-		)
-		(instances
-			(project "TADPOL PCB v2"
-				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
-					(reference "#PWR027")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Transistor_FET:IRLZ44N")
-		(at 88.9 74.93 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "abfe21f4-7bd1-42bd-a513-265a9c87956f")
-		(property "Reference" "Q5"
-			(at 88.9 66.04 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Nichrome"
-			(at 88.9 68.58 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
-			(at 90.805 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://www.irf.com/product-info/datasheets/data/irlz44n.pdf"
-			(at 92.71 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Description" "47A Id, 55V Vds, 22mOhm Rds Single N-Channel HEXFET Power MOSFET, TO-220AB"
-			(at 88.9 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "3"
-			(uuid "4417dd58-c889-4216-8c63-47c4e7b01f5f")
-		)
-		(pin "1"
-			(uuid "e8f37ae9-baca-4de7-a650-bd2f2f3d4b60")
-		)
-		(pin "2"
-			(uuid "14ac7418-0c00-4e90-9926-c319f194ab7a")
-		)
-		(instances
-			(project "TADPOL PCB v2"
-				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
-					(reference "Q5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+5V")
-		(at 35.56 162.56 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "afda50ef-249e-4b12-8f70-f117069f7824")
-		(property "Reference" "#PWR021"
-			(at 39.37 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+5V"
-			(at 31.75 162.5601 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 35.56 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 35.56 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 35.56 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "96ddfa86-91d9-4298-bec4-8dcb84872b36")
-		)
-		(instances
-			(project "TADPOL PCB v2"
-				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
-					(reference "#PWR021")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Relay:HONGFA_HFD2-0xx-x-L2-x")
 		(at 64.77 154.94 90)
 		(unit 1)
@@ -8018,80 +7158,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Transistor_FET:IRLZ44N")
-		(at 85.09 170.18 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "b8c0c710-c4e7-47c2-b8e4-a3fc86b72aa1")
-		(property "Reference" "Q4"
-			(at 85.09 161.29 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Vehicle Off"
-			(at 85.09 163.83 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
-			(at 86.995 165.1 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://www.irf.com/product-info/datasheets/data/irlz44n.pdf"
-			(at 88.9 165.1 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Description" "47A Id, 55V Vds, 22mOhm Rds Single N-Channel HEXFET Power MOSFET, TO-220AB"
-			(at 85.09 170.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "3"
-			(uuid "b831a4b4-303a-4a36-b8f4-3ef5e56a566f")
-		)
-		(pin "1"
-			(uuid "fafdfb9e-da53-4bc2-a49f-365752b7b7c8")
-		)
-		(pin "2"
-			(uuid "0d42e099-d9f1-4fd1-adcf-a12ac5ab6cbf")
-		)
-		(instances
-			(project "TADPOL PCB v2"
-				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
-					(reference "Q4")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Connector:Conn_01x05_Socket")
 		(at 38.1 59.69 180)
 		(unit 1)
@@ -8168,141 +7234,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector:Conn_01x02_Socket")
-		(at 68.58 74.93 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "c12c5f8f-d863-461e-a0b4-f48a26559edf")
-		(property "Reference" "J10"
-			(at 69.215 67.31 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Nichrome"
-			(at 69.215 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical"
-			(at 68.58 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 68.58 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated"
-			(at 68.58 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "2e72d649-776a-4a6f-a308-595839cadf76")
-		)
-		(pin "1"
-			(uuid "41f98a05-06b7-4645-91d2-a2d107124ab2")
-		)
-		(instances
-			(project "TADPOL PCB v2"
-				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
-					(reference "J10")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:+5V")
-		(at 90.17 167.64 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "c8c53ab7-0055-4989-821f-52f0fe3821e8")
-		(property "Reference" "#PWR029"
-			(at 86.36 167.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+5V"
-			(at 93.98 167.6399 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 90.17 167.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 90.17 167.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+5V\""
-			(at 90.17 167.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "b94049ec-ae03-4be6-a581-b3c6aed241a9")
-		)
-		(instances
-			(project "TADPOL PCB v2"
-				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
-					(reference "#PWR029")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Connector:Conn_01x04_Socket")
 		(at 38.1 78.74 180)
 		(unit 1)
@@ -8319,7 +7250,7 @@
 				)
 			)
 		)
-		(property "Value" "I2C Connector"
+		(property "Value" "Sensor Board"
 			(at 30.226 78.486 0)
 			(effects
 				(font
@@ -8581,6 +7512,73 @@
 	)
 	(symbol
 		(lib_id "power:GND")
+		(at 22.86 135.89 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "da1caefb-3339-41a5-93a2-4de86584c459")
+		(property "Reference" "#PWR03"
+			(at 16.51 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 19.05 135.8899 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 22.86 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 22.86 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 22.86 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "93b14571-bea7-4ed6-ade1-663cd7b56975")
+		)
+		(instances
+			(project ""
+				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
+					(reference "#PWR03")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
 		(at 130.81 24.13 270)
 		(unit 1)
 		(exclude_from_sim no)
@@ -8640,6 +7638,73 @@
 			(project "TADPOL PCB v2"
 				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
 					(reference "#PWR024")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 72.39 144.78 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "de1de638-7de0-48ca-8ed4-53ec371e9e2e")
+		(property "Reference" "#PWR01"
+			(at 68.58 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 76.2 144.7799 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 72.39 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 72.39 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+5V\""
+			(at 72.39 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a7642fae-2217-4a30-a5ed-d2baa2893f9b")
+		)
+		(instances
+			(project ""
+				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
+					(reference "#PWR01")
 					(unit 1)
 				)
 			)
@@ -8860,16 +7925,33 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 74.93 57.15 90)
+		(lib_id "Connector:Conn_01x02_Socket")
+		(at 67.31 102.87 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "f68dae2c-905f-47f6-ae2f-8747c9cd064d")
-		(property "Reference" "#PWR08"
-			(at 81.28 57.15 0)
+		(fields_autoplaced yes)
+		(uuid "f3410a32-aa0f-4704-8af8-a318f6bd5e8e")
+		(property "Reference" "J12"
+			(at 67.945 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Vehicle Off"
+			(at 67.945 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical"
+			(at 67.31 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8877,17 +7959,8 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "GND"
-			(at 78.74 57.1499 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 74.93 57.15 0)
+		(property "Datasheet" "~"
+			(at 67.31 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8895,8 +7968,8 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" ""
-			(at 74.93 57.15 0)
+		(property "Description" "Generic connector, single row, 01x02, script generated"
+			(at 67.31 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8904,22 +7977,16 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 74.93 57.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
+		(pin "2"
+			(uuid "c2558c89-b923-4046-8296-fb7ba1e16793")
 		)
 		(pin "1"
-			(uuid "5de0306c-71e8-41c7-9fdd-dab6f501541a")
+			(uuid "9c39673b-e30a-4ec2-b0ae-773cf7eadeda")
 		)
 		(instances
 			(project "TADPOL PCB v2"
 				(path "/9e7dd7ed-3202-496b-bb00-bf5dc62c9a3c"
-					(reference "#PWR08")
+					(reference "J12")
 					(unit 1)
 				)
 			)
