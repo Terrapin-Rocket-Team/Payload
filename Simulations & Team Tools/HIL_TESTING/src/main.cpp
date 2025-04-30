@@ -12,8 +12,8 @@ void setup() {
 float computeControl(float heading, float x, float y, float angularVelocity) {
   angleToRocket = atan2(y,x);
   radius = sqrt(x*x+y*y);
-  dError = previous
-  
+  dError = (error-previousError)/DT
+  goalAngle = angleToRocket
   
   
   return 
