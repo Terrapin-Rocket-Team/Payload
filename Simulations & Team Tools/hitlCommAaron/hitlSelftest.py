@@ -11,17 +11,27 @@ import time
 ser = serial.Serial(port = 'COM5', baudrate = 115200)
 time.sleep(1)
 
-x = 5.0
-y = 5.0
+# Initialize your simulation state
+x = 0.0
+y = 0.0
+z = 100.0
 
+
+############ Super basic past code that works (use as benchmark)
 while True:
+    start_time = time.time()
     # merges values into string with the form: number,number,etc....
-    msg = f"{x},{y}\n"
+    msg = f"{x},{y},{z} \n"
     # bytes() function allows for the data to be sent over
     ser.write(bytes(msg, 'UTF-8'))
     value = ser.readline()
     valueInString = str(value, 'UTF-8')
-    print(valueInString)
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+
+    print(valueInString + f"Elapsed time: {elapsed_time:.4f} seconds")
     # changes x and y values before running the loop again
     x = x + 0.3
     y = y + 0.7
+    z = z - 1.5
