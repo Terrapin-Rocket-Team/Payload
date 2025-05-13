@@ -54,11 +54,6 @@ double previousAngle = 0;
 void loop()
 {
   if (computer.update()){
-    // if (vehicle.stage == GLIDING) {
-    //   //nichrome for bag/parafoil
-    //   digitalWrite(3, HIGH);
-    //   digitalWrite(4, HIGH);
-    // }
   
     if (vehicle.stage == GLIDING) {
   
