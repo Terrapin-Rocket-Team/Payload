@@ -4,7 +4,6 @@
 #include <State/State.h>
 #include "PWMServo.h"
 
-
 enum VehicleStages { // TODO update this
     PRELAUNCH,
     BOOST, //Rocket accelerating upwards
@@ -29,6 +28,8 @@ class VehicleState : public State {
 
     public:
         VehicleState(Sensor **sensors, int numSensors, Filter *filter);
+        virtual ~VehicleState();
+
         void updateState(double newTime = -1) override;
         
         int stage;
@@ -44,10 +45,7 @@ class VehicleState : public State {
       
 
         void servoSetup(int ServoPin,int camServoPin,double SetNeutral,double camSetNeutral);
-        void moveServo(double delta);
         void moveCam();
-        double findDelta(double phi, double gamma);
-        void goDirection(double direction);
         double goalOrbit(double rocketX, double rocketY, double X, double Y, double R);
 
         PWMServo pitch;

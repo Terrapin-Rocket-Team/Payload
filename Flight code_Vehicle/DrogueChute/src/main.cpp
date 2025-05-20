@@ -1,6 +1,3 @@
-#include <Arduino.h>
-#include <Wire.h>
-#include <vector>
 #include "MMFS.h"
 #include "VehicleState.h"
 
@@ -70,7 +67,6 @@ void loop()
     // Calculate error
     //targetAngle = vehicle.goalOrbit(rocketx, rockety, gps.getPos()[0], gps.getPos()[1], 50/111111); //final argument is target radius (converting 50 long/lat to meters)
     float error = currentAngle - targetAngle;
-    float error = 60;
 
     Serial.print("Error: ");
     Serial.print(error);

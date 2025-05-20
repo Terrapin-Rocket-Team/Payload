@@ -3,6 +3,9 @@
 
 using namespace mmfs;
 
+VehicleState::~VehicleState() {
+    // No special cleanup needed? Leave empty.
+}
 
 VehicleState::VehicleState(Sensor **sensors, int numSensors, Filter *filter) : State(sensors, numSensors, filter) {
     stage = PRELAUNCH;
@@ -107,8 +110,6 @@ void VehicleState::servoSetup(int ServoPin,int camServoPin,double SetNeutral,dou
     servo.write(SetNeutral);
     pitch.write(camSetNeutral);
 }
-
-
 
 void VehicleState::moveCam(){
 
