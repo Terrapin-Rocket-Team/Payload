@@ -63,9 +63,9 @@ class VehicleState : public State {
         void goDirection(double direction);
         double goalOrbit(double rocketX, double rocketY, double X, double Y, double R);
 
-        PWMServo pitch;
-        PWMServo left;
-        PWMServo right;
+        Servo pitch;
+        Servo left;
+        Servo right;
 
         float leftServoValue;
         float rightServoValue;

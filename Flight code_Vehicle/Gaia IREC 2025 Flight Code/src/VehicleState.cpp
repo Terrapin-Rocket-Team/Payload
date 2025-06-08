@@ -28,8 +28,8 @@ void VehicleState::updateState(double newTime)
 }
 
 void VehicleState::determineStage(){
-    mmfs::Barometer *baro = reinterpret_cast<mmfs::Barometer *>(getSensor(mmfs::BAROMETER_));
-    mmfs::GPS *gps = reinterpret_cast<mmfs::GPS *>(getSensor(mmfs::GPS_));
+    mmfs::Barometer *baro = reinterpret_cast<mmfs::Barometer *>(getSensor("Barometer"_i));
+    mmfs::GPS *gps = reinterpret_cast<mmfs::GPS *>(getSensor("GPS"_i));
     
     if(stage == PRELAUNCH && acceleration.magnitude() > 40){
         mmfs::getLogger().setRecordMode(mmfs::FLIGHT);
@@ -191,12 +191,12 @@ Point VehicleState::getWindCorrectionCoordinates(Point r){
 // Servo Functions
 
 void VehicleState::servoSetup(int leftServoPin,int rightServoPin,int camServoPin, double leftSetNeutral,double rightSetNeutral,double camSetNeutral){ //input the servo pins, and the value for the servo to be up
-    left.attach(leftServoPin);
-    right.attach(rightServoPin);
-    pitch.attach(camServoPin);
-    left.write(leftSetNeutral);
-    right.write(rightSetNeutral);
-    pitch.write(camSetNeutral);
+    //left.attach(leftServoPin);
+    // right.attach(rightServoPin);
+    // pitch.attach(camServoPin);
+    // left.write(leftSetNeutral);
+    // right.write(rightSetNeutral);
+    // pitch.write(camSetNeutral);
 }
 
 void VehicleState::moveCam(){
@@ -205,7 +205,7 @@ void VehicleState::moveCam(){
 
     //implement cam control code
 
-    pitch.write(cam_servo_value);
+    //pitch.write(cam_servo_value);
 }
 
 double VehicleState::goalOrbit(double rocketX, double rocketY, double X, double Y, double R){
@@ -226,8 +226,8 @@ void VehicleState::goDirection(double goal){
     goal += 180;
     if(goal>360){goal -= 360;}
 
-    IMU *imu = reinterpret_cast<IMU *>(getSensor(IMU_));
-    mmfs::Vector<3> ori = imu->getOrientation().toEuler(); //function from BNO55.cpp
+    IMU *imu = reinterpret_cast<IMU *>(getSensor("IMU"_i));
+    mmfs::Vector<3> ori = imu->getOrientation().toEuler321(); //function from BNO55.cpp
     double yaw = ori.z(); //body frame from Inertial frame angle
     double delta = findDelta(yaw, goal);
      moveServo(delta);
