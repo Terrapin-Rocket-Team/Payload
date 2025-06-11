@@ -9,7 +9,9 @@ VehicleState::VehicleState(Sensor **sensors, int numSensors, Filter *filter) : S
     timeOfLaunch = 0;
     timeOfLastStage = 0;
     timeOfDay = 0;
-    
+
+    addColumn(DOUBLE, &left_servo_value, "left servo value");
+    addColumn(DOUBLE, &right_servo_value, "right servo value");
     addColumn(DOUBLE, &servoOutput, "combined servo output");
     addColumn(DOUBLE, &vehicleX, "GPS X");
     addColumn(DOUBLE, &vehicleY, "GPS Y");
@@ -22,14 +24,14 @@ VehicleState::VehicleState(Sensor **sensors, int numSensors, Filter *filter) : S
 void VehicleState::updateState(double newTime)
 {
     State::updateState(newTime); // call base version for sensor updates
-    // determineStage(); // determine the stage of the flight
+    determineStage(); // determine the stage of the flight
 }
 
 void VehicleState::determineStage(){
     mmfs::Barometer *baro = reinterpret_cast<mmfs::Barometer *>(getSensor("Barometer"_i));
     mmfs::GPS *gps = reinterpret_cast<mmfs::GPS *>(getSensor("GPS"_i));
     
-    if(stage == PRELAUNCH && acceleration.magnitude() > 40 && baro->getAGLAltM() > 100) {
+    if(stage == PRELAUNCH && acceleration.magnitude() > 40){
         mmfs::getLogger().setRecordMode(mmfs::FLIGHT);
         bb.aonoff(mmfs::BUZZER, 200);
         stage = BOOST;
@@ -44,13 +46,13 @@ void VehicleState::determineStage(){
             }
         }
     }
-    else if(stage == BOOST && (acceleration.z() < 0 || (currentTime - timeOfLastStage) > 6)){
+    else if(stage == BOOST && acceleration.z() < 0){
         bb.aonoff(mmfs::BUZZER, 200, 2);
         timeOfLastStage = currentTime;
         stage = COAST;
         mmfs::getLogger().recordLogData(mmfs::INFO_, "Coasting detected.");
     }
-    else if (stage == COAST && ((baro->getAGLAltFt() > 10000 && (currentTime - timeOfLastStage) > 5) || (currentTime - timeOfLastStage) > 45)) {
+    else if (stage == COAST && velocity.z() <= 0 && (currentTime - timeOfLastStage) > 5) {
         bb.aonoff(mmfs::BUZZER, 200, 2);
         timeOfLastStage = currentTime;
         char logData[100];
@@ -59,7 +61,7 @@ void VehicleState::determineStage(){
         stage = DROGUE;
         mmfs::getLogger().recordLogData(mmfs::INFO_, "Drogue detected.");
     }
-    else if(stage == DROGUE &&  baro->getAGLAltFt() < 1500 && (currentTime - timeOfLastStage) > 5){ // logic for detecting vehicle ejection
+    else if(stage == DROGUE &&  baro->getAGLAltFt() < 1500){ // logic for detecting vehicle ejection
         bb.aonoff(mmfs::BUZZER, 200, 2);
         timeOfLastStage = currentTime;
         char logData[100];
@@ -77,7 +79,7 @@ void VehicleState::determineStage(){
         stage = GLIDING;
         mmfs::getLogger().recordLogData(mmfs::INFO_, "GLIDING detected.");
     }
-    else if(stage == GLIDING && (((currentTime - timeOfLastStage) > 60) && ((baro->getAGLAltFt() < 100) || ((currentTime - timeOfLastStage) > 120)))){
+    else if(stage == GLIDING && ((baro->getAGLAltFt() < 100) || ((currentTime - timeOfLastStage) > 60))){
         bb.aonoff(mmfs::BUZZER, 200, 2);
         timeOfLastStage = currentTime;
         stage = LANDED;
@@ -85,7 +87,7 @@ void VehicleState::determineStage(){
         mmfs::getLogger().setRecordMode(mmfs::GROUND);
         mmfs::getLogger().recordLogData(mmfs::INFO_, "Dumped data after landing.");
     }
-    else if (stage == LANDED && (currentTime - timeOfLastStage) > 30)
+    else if (stage == LANDED && (currentTime - timeOfLastStage) > 60)
     {
         bb.aonoff(mmfs::BUZZER, 200, 2);
         stage = PRELAUNCH;
@@ -94,7 +96,7 @@ void VehicleState::determineStage(){
         mmfs::getLogger().setRecordMode(mmfs::FLIGHT);
         bb.aonoff(mmfs::BUZZER, 200, 2);
         timeOfLastStage = currentTime;
-        stage = DROGUE;
+        stage = COAST;
         mmfs::getLogger().recordLogData(mmfs::INFO_, "Launch detected. Using Backup Condition.");
         for (int i = 0; i < maxNumSensors; i++)
         {

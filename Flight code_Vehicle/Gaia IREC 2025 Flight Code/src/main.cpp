@@ -2,14 +2,17 @@
 #include <Wire.h>
 #include <vector>
 #include <Servo.h>
+#include "Si4463.h"
+#include "422Mc80_4GFSK_009600H.h"
 #include "MMFS.h"
 #include "VehicleState.h"
 
 
 mmfs::MAX_M10S gps;
-mmfs::MS5611 baro;
+mmfs::DPS368 baro;
 mmfs::BMI088andLIS3MDL vehicle_imu;
 Logger logger;
+
 Sensor *sensors[] = {&gps, &baro, &vehicle_imu};
 
 VehicleState vehicle(sensors, 3, nullptr);
@@ -22,74 +25,136 @@ MMFSConfig config = MMFSConfig()
                         .withBBAsync(true, 50);
 
 MMFSSystem computer = MMFSSystem(&config);
-
-float targetAngle = 0;
-float timeofupdate = 100;
-// PD Controller gains
-float kp = 1;
-float ki = 0.0; 
-float kd = 0.05;
-
-float error = 0.0;
-float previousError = 0.0;
-unsigned long previousTime = 0;
-int timeOfLastUpdate = 0;
-
-Vector<3> orientationVector(0, 0, 0);
-double heading = 0;
+int itterationloop = 0;
 
 Servo actuator;
-float integral = 0;
+
+APRSConfig aprsConfigAvionics = {"KD3BBD", "ALL", "WIDE1-1", PositionWithoutTimestampWithoutAPRS, '\\', 'M'};
+APRSConfig aprsConfigPayload = {"KQ4TCN", "ALL", "WIDE1-1", PositionWithoutTimestampWithoutAPRS, '\\', 'M'};
+uint8_t encoding[] = {7, 4, 4};
+APRSTelem avionicsTelem(aprsConfigAvionics);
+Message msgAvionics;
+Message msgPayload;
+
+const char *avionicsCall = "KD3BBD";
+const char *airbrakeCall = "KC3UTM";
+Si4463HardwareConfig hwcfg = {
+    MOD_4GFSK,        // modulation
+    DR_4_8k,          // data rate
+    (uint32_t)430e6,  // frequency (Hz)
+    POWER_COTS_30dBm, // tx power (127 = ~20dBm)
+    48,               // preamble length
+    16,               // required received valid preamble
+};
+
+Si4463PinConfig pincfg = {
+    &SPI, // spi bus to use
+    10,   // cs
+    15,   // sdn
+    14,   // irq
+    24,   // gpio0
+    25,   // gpio1
+    36,   // gpio2
+    37,   // gpio3
+};
+
+Si4463 radio(hwcfg, pincfg);
 void setup()
 {
   computer.init();
   getLogger().recordLogData(mmfs::INFO_, "Entering Setup");  
   actuator.attach(2);
+  if (radio.begin(CONFIG_422Mc80_4GFSK_009600H, sizeof(CONFIG_422Mc80_4GFSK_009600H)))
+    {
+        bb.onoff(BUZZER, 1000);
+        getLogger().recordLogData(ERROR_, "Radio initialized.");
+    }
+    else
+    {
+        bb.onoff(BUZZER, 200, 3);
+        getLogger().recordLogData(INFO_, "Radio failed to initialize.");
+    }
   getLogger().recordLogData(mmfs::INFO_, "Leaving Setup");
 }
+uint32_t payloadTimer = millis();
+uint32_t debugTimer = millis();
+uint32_t txTimeout = millis();
+bool sendPayload = false;
+bool lookingForAvionics = true;
 
 void loop() {
   if (computer.update()) {  
-    //if (vehicle.stage == GLIDING) {
-      
-      // Pull yaw from the DCM matrix
-      mmfs::Matrix DCM_Matrix = vehicle_imu.getOrientation().toMatrix();
-      double yaw = atan2(DCM_Matrix.get(1, 0), DCM_Matrix.get(1, 1));
-      if (yaw < 0){
-        yaw = yaw + 2 * 3.14159;
+    if (vehicle.stage == GLIDING) {
+      //This is ugly I know
+      if (itterationloop < 40) {
+        vehicle.servoOutput = 1350;
       }
-      heading = yaw*360/(2*3.14159);
-      
-      
-      // Calculate error
-      // targetAngle = vehicle.goalOrbit(vehicle.rocketx, vehicle.rockety, gps.getPos()[0], gps.getPos()[1], 50/111111); //final argument is target radius (converting 50 long/lat to meters - is this right?)
-      error =  heading - targetAngle;
-      //Serial.println(error);
-      if(error > 180){
-         error = error - 360;
+      else if (itterationloop < 80) {
+        vehicle.servoOutput = 1550;
       }
-
-      // Calculate derivative term
-      float derivative = 0;
-      derivative = (error - previousError)/(timeofupdate/1000);
-      // Serial.println(derivative);
-      //Serial.print(UPDATE_INTERVAL);
-      //Serial.println(derivative);
-      integral = integral + error * (timeofupdate/1000);
-      Serial.println(error);
-      if ((previousError > 0 && error < 0) || (previousError < 0 && error > 0)){
-        integral = 0;
-        derivative = 0;
+      else if (itterationloop < 120) {
+        vehicle.servoOutput = 1750;
       }
-      // Serial.println(integral);
-
-      float output = kp * error + ki * integral + kd * derivative;
-      
-      double servoAngle = map(output, -180, 180, 900, 1800); // Map output to servo angle range
-      servoAngle = constrain(servoAngle, 900, 1800);
-      actuator.writeMicroseconds(servoAngle);
-      Serial.println(servoAngle);
-      previousError = error;
-    //}
+      else if (itterationloop < 160) {
+        vehicle.servoOutput = 1850;
+      }
+      else if (itterationloop < 260) {
+        vehicle.servoOutput = 900;
+      }
+      else {
+        itterationloop = 0;
+      }
+      itterationloop++;
+      actuator.writeMicroseconds(vehicle.servoOutput);
+    }
   }
+   if (millis() - txTimeout > 200 && lookingForAvionics && radio.avail())
+    {
+        msgAvionics.size = radio.readRXBuf(msgAvionics.buf, Message::maxSize);
+        char call[7] = {0};
+        memset(call, 0, sizeof(char));
+        memcpy(call, msgAvionics.buf, 6);
+        Serial.println(call);
+        if (strcmp(call, avionicsCall) == 0)
+        {
+            Serial.println("Got avionics telem");
+            msgAvionics.decode(&avionicsTelem);
+            payloadTimer = millis();
+            lookingForAvionics = false;
+            sendPayload = true;
+        }
+        radio.available = false;
+    }
+
+    if (millis() - payloadTimer > 500 && sendPayload)
+    // if (millis() - payloadTimer > 1000)
+    {
+        // payloadTimer = millis();
+        sendPayload = false;
+        Serial.print("Timer after avionics is ");
+        Serial.print(millis() - payloadTimer);
+        Serial.println(", sending own telem");
+
+        double orient[3] = {vehicle_imu.getAngularVelocity().x(), vehicle_imu.getAngularVelocity().y(), vehicle_imu.getAngularVelocity().z()};
+        APRSTelem aprs = APRSTelem(aprsConfigPayload, gps.getPos().x(), gps.getPos().y(), baro.getAGLAltFt(), vehicle.getVelocity().z(), gps.getHeading(), orient, 0);
+
+        aprs.stateFlags.setEncoding(encoding, 3);
+        uint8_t arr[] = {(uint8_t)(int)baro.getTemp(), (uint8_t)vehicle.getStage(), (uint8_t)gps.getFixQual()};
+        aprs.stateFlags.pack(arr);
+        radio.send(aprs);
+
+        txTimeout = millis();
+        lookingForAvionics = true;
+    }
+
+    if (millis() - debugTimer > 500)
+    {
+        debugTimer = millis();
+        Serial.println("here");
+        Serial.println(radio.state);
+        Serial.println(radio.readFRR(0));
+    }
+
+    radio.update();
+
 }
