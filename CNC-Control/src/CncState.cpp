@@ -2,8 +2,10 @@
 #include <Utils/Astra.h>
 #include "CncState.h"
 
+using namespace astra;
+
 // Constructor
-CncState::CncState() {
+CncState::CncState() : DefaultState() {
     cncActive = false;
     cncDone = false;
     
@@ -12,9 +14,6 @@ CncState::CncState() {
 
 void CncState::updateCncState() {
     Vector<3> accel = accelSensor->getAccel();
-
-    float ax = accel.x();
-    float ay = accel.y();
     float az = accel.z();
 
     if (!cncActive && az >= accelerationThreshold) {

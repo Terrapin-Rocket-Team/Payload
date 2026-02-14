@@ -7,7 +7,7 @@
 
 using namespace astra;
 
-class CncState : public State  
+class CncState : public DefaultState  
 {
 
 public:
