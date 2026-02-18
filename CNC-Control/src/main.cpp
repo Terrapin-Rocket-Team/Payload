@@ -1,43 +1,52 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <Sensors/HW/IMU/BMI088.h>
+#include <Sensors/HW/Baro/DPS368.h>
 #include <Utils/Astra.h>
-#include "CncState.h"
-
+#include <AstraRocket.h>
+#include <Sensors/MountingTransform.h>
 using namespace astra;
+using namespace astra_rocket;
 
-CncState cncState;
+BMI088 imu;
+DPS368 baro;
 
+AstraRocketConfig config; 
 
-BMI088 myImu("BMI088", &Wire);
-
-AstraConfig config = AstraConfig()
-        .with6DoFIMU(&myImu)  
-        .withState(&cncState);
-
-Astra sys(&config);
+AstraRocket cnc(config);
 
 
 void setup() {
     Serial.begin(115200);
-    Wire.begin();
-     int err = sys.init();
-    if (err != 0) {
-        LOGE("Astra init failed with %d error(s)", err);
+
+    imu.setMountingOrientation(MountingOrientation::ROTATE_90_Z);
+
+    config.with6DoFIMU(&imu);
+    config.withBaro(&baro);
+    
+    Serial.println("Initializing AstraRocket...");
+    if (!cnc.init())
+    {
+        Serial.println("ERROR: AstraRocket initialization failed!");
+        while (1)
+        {
+            delay(1000);
+        }
     }
-    Serial.println("Setup complete");
 }
 
 void loop() {
     
-    sys.update();
-    cncState.updateCncState();
+    cnc.update();
 
     // Read accelerometer
-    Vector<3> accel = myImu.getAccelSensor()->getAccel();
+    Vector<3> accel = imu.getAccelSensor()->getAccel();
+    Serial.print("accel x: ");
     Serial.print(accel.x());
+    Serial.print("  accel y: ");
     Serial.print(accel.y());
-    Serial.print(accel.z());
+    Serial.print("  accel z: ");
+    Serial.println(accel.z());
 
     float zAccel = accel.z();
 
