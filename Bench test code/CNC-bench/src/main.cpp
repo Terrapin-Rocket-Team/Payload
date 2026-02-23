@@ -41,27 +41,31 @@ void loop() {
     cnc.update();
 
     // Read accelerometer
-    Vector<3> accel = imu.getAccelSensor()->getAccel();
-    Serial.print("accel x: ");
-    Serial.print(accel.x());
-    Serial.print("  accel y: ");
-    Serial.print(accel.y());
-    Serial.print("  accel z: ");
-    Serial.println(accel.z());
+    // Vector<3> accel = imu.getAccelSensor()->getAccel();
+    // Serial.print("accel x: ");
+    // Serial.print(accel.x());
+    // Serial.print("  accel y: ");
+    // Serial.print(accel.y());
+    // Serial.print("  accel z: ");
+    // Serial.println(accel.z());
 
-    float zAccel = accel.z();
+    // Check if the user typed something in the Serial Monitor
+    if (Serial.available() > 0) {
+        char incomingByte = Serial.read();
 
-    delay(2000);
-
-    Serial8.print("$J=G91 X100 F500\n");
-
-    // Keep moving for the specified time
-    delay(1000);
-
-    // 0x85 is the Real-time "Jog Cancel" command for GRBL
-    // This stops the motion immediately with a controlled deceleration
-    Serial8.write(0x85);
-
-    while(1);
+        if (incomingByte == '1') {
+            Serial.println("Action: Jogging X+100");
+            // $J= is a Jogging command. G91 is incremental mode.
+            Serial8.print("$J=G91 X100 F500\n");
+        } 
+        else if (incomingByte == '2') {
+            Serial.println("Action: Jogging X-100");
+            Serial8.print("$J=G91 X-100 F500\n");
+        } 
+        else if (incomingByte == 's') {
+            Serial.println("Action: Emergency Stop (Jog Cancel)");
+            Serial8.write(0x85); // GRBL Real-time Jog Cancel
+        }
+    }
    
 }
