@@ -12,12 +12,16 @@ BMI088 imu;
 DPS368 baro;
 
 AstraRocketConfig config; 
-
 AstraRocket cnc(config);
+
+// Variables we want to track in the CSV log
+float totalAccel = 0;
+bool commandSent = false;
 
 
 void setup() {
     Serial.begin(115200);
+    Serial8.begin(115200);
 
     imu.setMountingOrientation(MountingOrientation::ROTATE_90_Z);
 
@@ -33,6 +37,9 @@ void setup() {
             delay(1000);
         }
     }
+
+    // astra::Logger::addTelemetryVar("Total_Accel", &totalAccel);
+    // astra::Logger::addTelemetryVar("CNC_Active", &commandSent);
 }
 
 void loop() {
@@ -41,26 +48,31 @@ void loop() {
 
     // Read accelerometer
     Vector<3> accel = imu.getAccelSensor()->getAccel();
-    Serial.print("accel x: ");
-    Serial.print(accel.x());
-    Serial.print("  accel y: ");
-    Serial.print(accel.y());
-    Serial.print("  accel z: ");
-    Serial.println(accel.z());
+    totalAccel = abs(accel.x()) + abs(accel.y()) + abs(accel.z());
+    Serial.print("Total Accleration: ");
+    Serial.println(totalAccel);
 
-    float zAccel = accel.z();
-
-    if (zAccel > 40) {
+    if (totalAccel > 40 && !commandSent) {
         delay(100);
 
-    Serial1.print("$J=G91 X100 F500\n");
+        // Log the event to the .log file
+        // cnc.getLogger().log("LAUNCH_DETECTED: Acceleration threshold exceeded.", LogLevel::INFO);
+        
+        // // Record the exact command being sent to Serial8 in the log
+        // cnc.getLogger().log("ACTION: Sending Command $J=G91 X20.8 F500 to GRBL", LogLevel::INFO);
 
-    // Keep moving for the specified time
-    delay(1000);
+        Serial8.print("$J=G91 X150 F500\n");
+        commandSent = true;
 
-    // 0x85 is the Real-time "Jog Cancel" command for GRBL
-    // This stops the motion immediately with a controlled deceleration
-    Serial1.write(0x85);
+        // cnc.getLogger().log("STATE: CNC is moving...", LogLevel::INFO);
+        
+        // // Ensure logs are written to SD before stopping
+        // cnc.getLogger().flush();
+
+        while(1) {
+            cnc.update();
+            delay(100);
+        }
     }
    
 }
