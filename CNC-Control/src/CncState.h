@@ -7,27 +7,24 @@
 
 using namespace astra;
 
-class CncState : public DefaultState  
-{
-
+class CncState {
 public:
-    CncState();
+    void begin(HardwareSerial& serial, Servo& esc_);
+    void trigger();
+    void update();
+    void spindleStart();
+    void spindleStop();
+    void send(const char* cmd);                
+    bool sendAndWait(const char* cmd, unsigned long timeout = 1000);
+    void cancelJog();
 
-    void updateCncState();
-    bool isCncRunning();
-    
 
-    // Pointer to accelerometer from library
-    Accel* accelSensor;
+    HardwareSerial* grbl = nullptr;
+    Servo* esc = nullptr;
+    int escPin = 23;
+    long start;
 
-    //Getter
-    void get_Acceleration();
-
-private:
-    bool cncActive;
-    bool cncDone;
-    const float accelerationThreshold = 40;
-
-    void startCNC();
-    void stopCNC();
+    // response buffer
+    void processIncoming();
 };
+

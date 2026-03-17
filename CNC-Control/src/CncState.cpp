@@ -1,64 +1,63 @@
 #include <Arduino.h>
 #include <Utils/Astra.h>
+#include <Servo.h>
 #include "CncState.h"
+
 
 using namespace astra;
 
-// Constructor
-CncState::CncState() : DefaultState() {
-    cncActive = false;
-    cncDone = false;
+void CncState::begin(HardwareSerial& serial, Servo& esc_) {
+    grbl = &serial;
+    esc = &esc_;
+    esc->attach(escPin);
+    esc->writeMicroseconds(1500); // neutral / stop
+    start = millis();
+}
+
+void CncState::spindleStart() {
+    if (esc) esc->writeMicroseconds(2000);
+}
+
+void CncState::spindleStop() {
+    if (esc) esc->writeMicroseconds(1500);
+}
+
+
+void CncState::send(const char* cmd) {
+    if (grbl) {
+        grbl->print(cmd);
+        grbl->print("\n");
+    }
     
 }
 
+// --- Send and wait for "ok" or "error" ---
+bool CncState::sendAndWait(const char* cmd, unsigned long timeout) {
+    send(cmd);
 
-void CncState::updateCncState() {
-    Vector<3> accel = accelSensor->getAccel();
-    float az = accel.z();
+    unsigned long start = millis();
+    String line = "";
 
-    if (!cncActive && az >= accelerationThreshold) {
-        startCNC();
-        cncDone = true;
-        Serial.println("CNC ON");
+    while (millis() - start < timeout) {
+        while (grbl->available()) {
+            char c = grbl->read();
+
+            if (c == '\n') {
+                line.trim();
+
+                if (line == "ok") return true;
+                if (line.startsWith("error")) return false;
+
+                line = "";
+            } else {
+                line += c;
+            }
+        }
     }
 
-    if (cncActive && az < accelerationThreshold) {
-        stopCNC();
-        Serial.println("CNC OFF");
-    }
+    return(false);
 }
 
-
-
-
-
-
-// Start CNC
-void CncState::startCNC() {
-    cncActive = true;
-    Serial.println("CNC STARTED!");
-}
-
-// Stop CNC
-void CncState::stopCNC() {
-    cncActive = false;
-    Serial.println("CNC STOPPED!");
-}
-
-
-
-// Check if CNC is running
-bool CncState::isCncRunning() {
-    return cncActive;
-}
-
-
-
-
-
-
-void CncState::get_Acceleration(){
-    Vector<3> accel = accelSensor->getAccel();
-    float z = accel.x();
-    Serial.println(z);
+void CncState::cancelJog() {
+    grbl->write(0x85);
 }
