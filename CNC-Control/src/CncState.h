@@ -10,7 +10,6 @@ using namespace astra;
 class CncState {
 public:
     void begin(HardwareSerial& serial, Servo& esc_);
-    void trigger();
     void update();
     void spindleStart();
     void spindleStop();
@@ -23,6 +22,13 @@ public:
     Servo* esc = nullptr;
     int escPin = 23;
     long start;
+    Vector<3> accel;
+    float totalAccel;
+    bool commandSent;
+    bool commandStopped;
+    bool detect;
+    unsigned long detectTime;
+    unsigned long start;
 
     // response buffer
     void processIncoming();

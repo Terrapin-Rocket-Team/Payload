@@ -7,6 +7,9 @@
 #include <Sensors/MountingTransform.h>
 #include <Servo.h>
 #include <CncState.h>
+#include <RecordData/Logging/EventLogger.h>
+#include <RecordData/Logging/LoggingBackend/ILogSink.h>
+#include <RecordData/Logging/LoggingBackend/FileLogSink.cpp>
 using namespace astra;
 using namespace astra_rocket;
 
@@ -22,21 +25,28 @@ CncState cncState;
 const int ESC_STOP_US = 1500; // 1000µs is 0% throttle (also arms the ESC)
 const int ESC_RUN_US = 2000;  // 1150µs is low throttle (adjust safely!)
 
-// Variables we want to track in the CSV log
-float totalAccel = 0;
-bool commandSent = false;
-bool commandStopped = false;
-bool detect;
-unsigned long detectTime = 0;
-unsigned long start = 0;
+// Sink for human-readable events (e.g., LAUNCH_DETECTED)
+FileLogSink eventFile("EVENTS.log", StorageBackend::SD_CARD, true);
+ILogSink* eventSinks[] = { &eventFile };
 
+// Sink for telemetry data (e.g., IMU data, custom variables)
+FileLogSink telemFile("TELEM.csv", StorageBackend::SD_CARD, true);
+ILogSink* telemSinks[] = { &telemFile };
 
 void setup() {
     Serial.begin(115200);
     Serial8.begin(115200);
 
+    config.withEventLogs(eventSinks, 1);
+    config.withDataLogs(telemSinks, 1);
+
     Serial.println("Initializing CNC...");
     cncState.begin(Serial8, esc23);
+
+    cncState.commandSent = false;
+    cncState.commandStopped = false;
+    cncState.detectTime = 0;
+    cncState.start = 0;
 
     myimu.setMountingOrientation(MountingOrientation::ROTATE_90_Z);
     config.with6DoFIMU(&myimu);
@@ -52,8 +62,6 @@ void setup() {
         }
     }
 
-    // astra::Logger::addTelemetryVar("Total_Accel", &totalAccel);
-    // astra::Logger::addTelemetryVar("CNC_Active", &commandSent);
 }
 
 void loop() {
@@ -61,55 +69,48 @@ void loop() {
     cnc.update();
 
     // Read accelerometer
-    Vector<3> accel = myimu.getAccelSensor()->getAccel();
+    cncState.accel = myimu.getAccelSensor()->getAccel();
 
-    totalAccel = sqrt(
-        accel.x()*accel.x() +
-        accel.y()*accel.y() +
-        accel.z()*accel.z()
+    cncState.totalAccel = sqrt(
+        cncState.accel.x()*cncState.accel.x() +
+        cncState.accel.y()*cncState.accel.y() +
+        cncState.accel.z()*cncState.accel.z()
     );
 
     Serial.print("Total Accleration: ");
-    Serial.println(totalAccel);
+    Serial.println(cncState.totalAccel);
 
-    if (totalAccel > 40 and !detect) {
-        detectTime = millis();
-        detect = true;
+    if (cncState.totalAccel > 40 and !cncState.detect) {
+        cncState.detectTime = millis();
+        cncState.detect = true;
     }
 
-    if (totalAccel < 40 and detect) {
-        detect = false;
+    if (cncState.totalAccel < 40 and cncState.detect) {
+        cncState.detect = false;
     }
 
-    if (totalAccel > 40 && !commandSent && ((millis() - detectTime) > 500)) {
+    if (cncState.totalAccel > 40 && !cncState.commandSent && ((millis() - cncState.detectTime) > 500)) {
 
         // Log the event to the .log file
-        // cnc.getLogger().log("LAUNCH_DETECTED: Acceleration threshold exceeded.", LogLevel::INFO);
+        LOGI("LAUNCH_DETECTED: Acceleration threshold exceeded.");
 
         // // Record the exact command being sent to Serial8 in the log
         cncState.start = millis();
         cncState.spindleStart();
         cncState.send("$J=G91 X150 F100\n");
         cncState.send("$J=G91 Y100 F25\n");
-        commandSent = true;
-
-        
-
-        // cnc.getLogger().log("STATE: CNC is moving...", LogLevel::INFO);
-        
-        // // Ensure logs are written to SD before stopping
-        // cnc.getLogger().flush();
+        cncState.commandSent = true;
+        LOGI("STATE: CNC is moving...");
+    
 
     }
    
-    if (commandSent && (millis() - cncState.start > 5000) && !commandStopped) {
+    if (cncState.commandSent && (millis() - cncState.start > 5000) && !cncState.commandStopped) {
         cncState.cancelJog();
         cncState.spindleStop();
-        commandStopped = true;
+        cncState.commandStopped = true;
 
-        // cnc.getAstraSystem()->getLogger().log("STATE: Sequence complete. System Idle.", LogLevel::INFO);
-        // cnc.getAstraSystem()->getLogger().flush();
-
+        LOGI("STATE: Sequence complete. System Idle.");
         Serial.println("Sequence Complete.");
     }
 
