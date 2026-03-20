@@ -98,7 +98,7 @@ void loop() {
 
         // // Record the exact command being sent to Serial8 in the log
         cncState.start = millis();
-        //cncState.spindleStart();
+        cncState.spindleStart();
         cncState.send("$J=G91 X150 F100\n");
         cncState.commandSent = true;
         LOGI("STATE: CNC is moving into stock");
@@ -140,7 +140,7 @@ void loop() {
 
     if (cncState.commandSent && (millis() - cncState.start > 90000) && !cncState.commandStopped && (cncState.step == 5)) {
         cncState.cancelJog();
-        //cncState.spindleStop();
+        cncState.spindleStop();
         cncState.commandStopped = true;
         LOGI("STATE: Sequence complete. System Idle.");
 
