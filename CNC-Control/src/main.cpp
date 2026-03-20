@@ -9,7 +9,6 @@
 #include <CncState.h>
 #include <RecordData/Logging/EventLogger.h>
 #include <RecordData/Logging/LoggingBackend/ILogSink.h>
-#include <RecordData/Logging/LoggingBackend/FileLogSink.cpp>
 using namespace astra;
 using namespace astra_rocket;
 
@@ -47,6 +46,8 @@ void setup() {
     cncState.commandStopped = false;
     cncState.detectTime = 0;
     cncState.start = 0;
+    cncState.prevAccel = 0;
+    cncState.step = 0;
 
     myimu.setMountingOrientation(MountingOrientation::ROTATE_90_Z);
     config.with6DoFIMU(&myimu);
@@ -71,11 +72,11 @@ void loop() {
     // Read accelerometer
     cncState.accel = myimu.getAccelSensor()->getAccel();
 
-    cncState.totalAccel = sqrt(
+    cncState.totalAccel = 0.8*sqrt(
         cncState.accel.x()*cncState.accel.x() +
         cncState.accel.y()*cncState.accel.y() +
         cncState.accel.z()*cncState.accel.z()
-    );
+    ) + 0.2*cncState.prevAccel;
 
     Serial.print("Total Accleration: ");
     Serial.println(cncState.totalAccel);
@@ -87,31 +88,65 @@ void loop() {
 
     if (cncState.totalAccel < 40 and cncState.detect) {
         cncState.detect = false;
+        cncState.detectTime = 0;
     }
 
-    if (cncState.totalAccel > 40 && !cncState.commandSent && ((millis() - cncState.detectTime) > 500)) {
+    if ((cncState.totalAccel > 40) && !cncState.commandSent && ((millis() - cncState.detectTime) > 500) && (cncState.step == 0)) {
 
         // Log the event to the .log file
         LOGI("LAUNCH_DETECTED: Acceleration threshold exceeded.");
 
         // // Record the exact command being sent to Serial8 in the log
         cncState.start = millis();
-        cncState.spindleStart();
+        //cncState.spindleStart();
         cncState.send("$J=G91 X150 F100\n");
-        cncState.send("$J=G91 Y100 F25\n");
         cncState.commandSent = true;
-        LOGI("STATE: CNC is moving...");
-    
+        LOGI("STATE: CNC is moving into stock");
 
+        cncState.step++;
     }
    
-    if (cncState.commandSent && (millis() - cncState.start > 5000) && !cncState.commandStopped) {
+    if (cncState.commandSent && (millis() - cncState.start > 5000) && !cncState.commandStopped && (cncState.step == 1)) {
         cncState.cancelJog();
-        cncState.spindleStop();
-        cncState.commandStopped = true;
+        cncState.send("$J=G91 Y-100 F25\n");
+        LOGI("STATE: CNC is moving in +Y direction");
 
-        LOGI("STATE: Sequence complete. System Idle.");
-        Serial.println("Sequence Complete.");
+        cncState.step++;
     }
+
+    if (cncState.commandSent && (millis() - cncState.start > 10000) && !cncState.commandStopped && (cncState.step == 2)) {
+        cncState.cancelJog();
+        cncState.send("$J=G91 X100 F100\n");
+        LOGI("STATE: CNC is moving in +X direction");
+
+        cncState.step++;
+    }
+
+    if (cncState.commandSent && (millis() - cncState.start > 50000) && !cncState.commandStopped && (cncState.step == 3)) {
+        cncState.cancelJog();
+        cncState.send("$J=G91 Y100 F25\n");
+        LOGI("STATE: CNC is moving in -Y direction");
+
+        cncState.step++;
+    }
+
+    if (cncState.commandSent && (millis() - cncState.start > 55000) && !cncState.commandStopped && (cncState.step == 4)) {
+        cncState.cancelJog();
+        cncState.send("$J=G91 X-100 F100\n");
+        LOGI("STATE: CNC is moving in -X direction");
+
+        cncState.step++;
+    }
+
+    if (cncState.commandSent && (millis() - cncState.start > 90000) && !cncState.commandStopped && (cncState.step == 5)) {
+        cncState.cancelJog();
+        //cncState.spindleStop();
+        cncState.commandStopped = true;
+        LOGI("STATE: Sequence complete. System Idle.");
+
+        cncState.step++;
+    }    
+
+    cncState.prevAccel = cncState.totalAccel;
 
 }

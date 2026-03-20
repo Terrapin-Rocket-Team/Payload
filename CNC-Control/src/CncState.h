@@ -24,11 +24,12 @@ public:
     long start;
     Vector<3> accel;
     float totalAccel;
+    float prevAccel;
     bool commandSent;
     bool commandStopped;
     bool detect;
     unsigned long detectTime;
-    unsigned long start;
+    int step;
 
     // response buffer
     void processIncoming();
