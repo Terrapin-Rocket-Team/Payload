@@ -49,6 +49,8 @@ void setup() {
     cncState.prevAccel = 0;
     cncState.step = 0;
 
+    Serial8.print("$1=25"); //turn holding current off to save battery until launch
+
     myimu.setMountingOrientation(MountingOrientation::ROTATE_90_Z);
     config.with6DoFIMU(&myimu);
     config.withBaro(&baro);
@@ -102,6 +104,7 @@ void loop() {
         cncState.send("$J=G91 X150 F100\n");
         cncState.commandSent = true;
         LOGI("STATE: CNC is moving into stock");
+        Serial8.println("$1=255"); // turn holding current on
 
         cncState.step++;
     }
