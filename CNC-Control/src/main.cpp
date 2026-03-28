@@ -9,6 +9,10 @@
 #include <CncState.h>
 #include <RecordData/Logging/EventLogger.h>
 #include <RecordData/Logging/LoggingBackend/ILogSink.h>
+#include "FileLoader.h"
+#include <SPI.h>
+#include <SD.h>
+
 using namespace astra;
 using namespace astra_rocket;
 
@@ -20,15 +24,16 @@ AstraRocketConfig config;
 AstraRocket cnc(config);
 
 CncState cncState;
+FileLoader fileLoader;
 
-const int ESC_STOP_US = 1500; // 1000µs is 0% throttle (also arms the ESC)
-const int ESC_RUN_US = 2000;  // 1150µs is low throttle (adjust safely!)
+#define SD_CS_PIN 10
 
-// Sink for human-readable events (e.g., LAUNCH_DETECTED)
+const int ESC_STOP_US = 1500;
+const int ESC_RUN_US = 2000;
+
 FileLogSink eventFile("EVENTS.log", StorageBackend::SD_CARD, true);
 ILogSink* eventSinks[] = { &eventFile };
 
-// Sink for telemetry data (e.g., IMU data, custom variables)
 FileLogSink telemFile("TELEM.csv", StorageBackend::SD_CARD, true);
 ILogSink* telemSinks[] = { &telemFile };
 
@@ -36,8 +41,26 @@ void setup() {
     Serial.begin(115200);
     Serial8.begin(115200);
 
+    Serial8.write("\r\n\r\n");
+    delay(2000);
+    while (Serial8.available()) Serial8.read();
+
     config.withEventLogs(eventSinks, 1);
     config.withDataLogs(telemSinks, 1);
+
+    if (!SD.begin(SD_CS_PIN)) {
+        Serial.println("ERROR: SD card init failed!");
+        while (1);
+    }
+
+    if (!fileLoader.load("sequence.gcode")) {
+        Serial.println("ERROR: Could not load sequence.gcode!");
+        while (1);
+    }
+
+    Serial.print("Loaded ");
+    Serial.print(fileLoader.countLine());
+    Serial.println(" lines from sequence.gcode");
 
     Serial.println("Initializing CNC...");
     cncState.begin(Serial8, esc23);
@@ -48,30 +71,25 @@ void setup() {
     cncState.start = 0;
     cncState.prevAccel = 0;
     cncState.step = 0;
+    cncState.detect = false;
 
-    Serial8.print("$1=25"); //turn holding current off to save battery until launch
+    Serial8.print("$1=25");
 
     myimu.setMountingOrientation(MountingOrientation::ROTATE_90_Z);
     config.with6DoFIMU(&myimu);
     config.withBaro(&baro);
-    
-    Serial.println("Initializing AstraRocket...");
-    if (!cnc.init())
-    {
-        Serial.println("ERROR: AstraRocket initialization failed!");
-        while (1)
-        {
-            delay(1000);
-        }
-    }
 
+    Serial.println("Initializing AstraRocket...");
+    if (!cnc.init()) {
+        Serial.println("ERROR: AstraRocket initialization failed!");
+        while (1) { delay(1000); }
+    }
 }
 
 void loop() {
-    
+
     cnc.update();
 
-    // Read accelerometer
     cncState.accel = myimu.getAccelSensor()->getAccel();
 
     cncState.totalAccel = 0.8*sqrt(
@@ -83,73 +101,75 @@ void loop() {
     Serial.print("Total Accleration: ");
     Serial.println(cncState.totalAccel);
 
-    if (cncState.totalAccel > 40 and !cncState.detect) {
+    if (cncState.totalAccel > 40 && !cncState.detect) {
         cncState.detectTime = millis();
         cncState.detect = true;
     }
 
-    if (cncState.totalAccel < 40 and cncState.detect) {
+    if (cncState.totalAccel < 40 && cncState.detect) {
         cncState.detect = false;
         cncState.detectTime = 0;
     }
 
-    if ((cncState.totalAccel > 40) && !cncState.commandSent && ((millis() - cncState.detectTime) > 500) && (cncState.step == 0)) {
+    if ((cncState.totalAccel > 40) && !cncState.commandSent &&
+        ((millis() - cncState.detectTime) > 500) && (cncState.step == 0)) {
 
-        // Log the event to the .log file
         LOGI("LAUNCH_DETECTED: Acceleration threshold exceeded.");
-
-        // // Record the exact command being sent to Serial8 in the log
         cncState.start = millis();
         cncState.spindleStart();
-        cncState.send("$J=G91 X150 F100\n");
         cncState.commandSent = true;
-        LOGI("STATE: CNC is moving into stock");
-        Serial8.println("$1=255"); // turn holding current on
-
-        cncState.step++;
-    }
-   
-    if (cncState.commandSent && (millis() - cncState.start > 5000) && !cncState.commandStopped && (cncState.step == 1)) {
-        cncState.cancelJog();
-        cncState.send("$J=G91 Y-100 F25\n");
-        LOGI("STATE: CNC is moving in +Y direction");
-
-        cncState.step++;
+        LOGI("STATE: Sequence started.");
     }
 
-    if (cncState.commandSent && (millis() - cncState.start > 10000) && !cncState.commandStopped && (cncState.step == 2)) {
-        cncState.cancelJog();
-        cncState.send("$J=G91 X100 F100\n");
-        LOGI("STATE: CNC is moving in +X direction");
+    if (cncState.commandSent && !cncState.commandStopped) {
 
-        cncState.step++;
+        if (cncState.step < fileLoader.countLine()) {
+
+            const char* cmd = fileLoader.getLine(cncState.step);
+
+            if (cmd) {
+                cncState.send(cmd);
+                Serial.print("Sending step ");
+                Serial.print(cncState.step);
+                Serial.print(": ");
+                Serial.println(cmd);
+
+                bool gotOk = false;
+                unsigned long timeout = millis();
+                while (!gotOk && (millis() - timeout < 5000)) {
+                    if (Serial8.available()) {
+                        String response = Serial8.readStringUntil('\n');
+                        response.trim();
+                        if (response == "ok") gotOk = true;
+                        if (response.startsWith("error")) {
+                            Serial.print("GRBL error: ");
+                            Serial.println(response);
+                            break;
+                        }
+                    }
+                }
+
+                bool isIdle = false;
+                while (!isIdle) {
+                    Serial8.println("?");
+                    delay(100);
+                    if (Serial8.available()) {
+                        String status = Serial8.readStringUntil('\n');
+                        status.trim();
+                        if (status.startsWith("<Idle")) isIdle = true;
+                    }
+                }
+
+                cncState.step++;
+            }
+
+        } else {
+            cncState.spindleStop();
+            cncState.commandStopped = true;
+            LOGI("STATE: Sequence complete. System Idle.");
+        }
     }
-
-    if (cncState.commandSent && (millis() - cncState.start > 50000) && !cncState.commandStopped && (cncState.step == 3)) {
-        cncState.cancelJog();
-        cncState.send("$J=G91 Y100 F25\n");
-        LOGI("STATE: CNC is moving in -Y direction");
-
-        cncState.step++;
-    }
-
-    if (cncState.commandSent && (millis() - cncState.start > 55000) && !cncState.commandStopped && (cncState.step == 4)) {
-        cncState.cancelJog();
-        cncState.send("$J=G91 X-100 F100\n");
-        LOGI("STATE: CNC is moving in -X direction");
-
-        cncState.step++;
-    }
-
-    if (cncState.commandSent && (millis() - cncState.start > 90000) && !cncState.commandStopped && (cncState.step == 5)) {
-        cncState.cancelJog();
-        cncState.spindleStop();
-        cncState.commandStopped = true;
-        LOGI("STATE: Sequence complete. System Idle.");
-
-        cncState.step++;
-    }    
 
     cncState.prevAccel = cncState.totalAccel;
-
 }
+

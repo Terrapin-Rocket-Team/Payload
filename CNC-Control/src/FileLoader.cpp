@@ -1,8 +1,8 @@
 #include "FileLoader.h"
-#include <Arduino.h>
 #include <SPI.h>
 #include <SD.h>
 #include "FileLoader.h"
+#include "Arduino.h"
 
 
 
@@ -30,4 +30,13 @@ bool FileLoader::load(const char* filename) {
 
     f.close();
     return true;
+}
+
+const char* FileLoader::getLine(int index) {
+    if (index < 0 || index >= linecount) return nullptr;
+    return lines[index];
+}
+
+int FileLoader::countLine() {
+    return linecount;
 }
