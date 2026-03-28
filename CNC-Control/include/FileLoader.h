@@ -35,4 +35,4 @@ class FileLoader {
     char lines[MAX_LINES][MAX_LINE_LEN];
 
     int linecount;
-}
+};
