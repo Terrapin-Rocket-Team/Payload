@@ -1,7 +1,6 @@
 #include "FileLoader.h"
 #include <SPI.h>
 #include <SD.h>
-#include "FileLoader.h"
 #include "Arduino.h"
 
 
@@ -13,7 +12,9 @@ FileLoader::FileLoader() {
 
 bool FileLoader::load(const char* filename) {
     File f = SD.open(filename, FILE_READ);
-    if (!f) return false;
+    if (!f) { 
+        return false;
+    }
 
     linecount = 0;
 
@@ -21,8 +22,12 @@ bool FileLoader::load(const char* filename) {
         String line = f.readStringUntil('\n');
         line.trim();
 
-        if (line.length() == 0) continue;
-        if (line.length() >= MAX_LINE_LEN) continue;
+        if (line.length() == 0) {
+            continue;
+        }
+        if (line.length() >= MAX_LINE_LEN) {
+            continue;
+        }
 
         line.toCharArray(lines[linecount], MAX_LINE_LEN);
         linecount++;
@@ -33,7 +38,9 @@ bool FileLoader::load(const char* filename) {
 }
 
 const char* FileLoader::getLine(int index) {
-    if (index < 0 || index >= linecount) return nullptr;
+    if (index < 0 || index >= linecount) {
+        return nullptr;
+    }
     return lines[index];
 }
 

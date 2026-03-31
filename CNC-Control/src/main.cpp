@@ -82,7 +82,9 @@ void setup() {
     Serial.println("Initializing AstraRocket...");
     if (!cnc.init()) {
         Serial.println("ERROR: AstraRocket initialization failed!");
-        while (1) { delay(1000); }
+        while (true) { 
+            delay(1000); 
+        }
     }
 }
 
