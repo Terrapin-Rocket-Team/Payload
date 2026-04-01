@@ -7,9 +7,6 @@ LaunchSequencer::LaunchSequencer(CncState inState, FileLoader inLoader, BMI088& 
     this->imu = inImu;
 }
 
-void LaunchSequencer::begin() {
-    // Safe to interact with hardware here
-}
 
 void LaunchSequencer::update() {
     updateAcceleration();
