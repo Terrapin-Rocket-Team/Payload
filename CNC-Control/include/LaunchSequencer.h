@@ -8,7 +8,6 @@
 class LaunchSequencer {
 public:
     LaunchSequencer(CncState& state, FileLoader& loader, BMI088& imu);
-    void begin();
     void update();
 
 private:
