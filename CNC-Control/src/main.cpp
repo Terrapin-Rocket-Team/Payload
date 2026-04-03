@@ -7,9 +7,10 @@
 #include <Sensors/MountingTransform.h>
 #include <Servo.h>
 #include <CncState.h>
+#include "FileLoader.h"
+#include "LaunchSequencer.h"
 #include <RecordData/Logging/EventLogger.h>
 #include <RecordData/Logging/LoggingBackend/ILogSink.h>
-#include "FileLoader.h"
 #include <SPI.h>
 #include <SD.h>
 
@@ -36,6 +37,8 @@ ILogSink* eventSinks[] = { &eventFile };
 
 FileLogSink telemFile("TELEM.csv", StorageBackend::SD_CARD, true);
 ILogSink* telemSinks[] = { &telemFile };
+
+LaunchSequencer sequencer(cncState, fileLoader, myimu); // task
 
 void setup() {
     Serial.begin(115200);
@@ -91,87 +94,7 @@ void setup() {
 void loop() {
 
     cnc.update();
+    sequencer.update();
 
-    cncState.accel = myimu.getAccelSensor()->getAccel();
-
-    cncState.totalAccel = 0.8*sqrt(
-        cncState.accel.x()*cncState.accel.x() +
-        cncState.accel.y()*cncState.accel.y() +
-        cncState.accel.z()*cncState.accel.z()
-    ) + 0.2*cncState.prevAccel;
-
-    Serial.print("Total Accleration: ");
-    Serial.println(cncState.totalAccel);
-
-    if (cncState.totalAccel > 40 && !cncState.detect) {
-        cncState.detectTime = millis();
-        cncState.detect = true;
-    }
-
-    if (cncState.totalAccel < 40 && cncState.detect) {
-        cncState.detect = false;
-        cncState.detectTime = 0;
-    }
-
-    if ((cncState.totalAccel > 40) && !cncState.commandSent &&
-        ((millis() - cncState.detectTime) > 500) && (cncState.step == 0)) {
-
-        LOGI("LAUNCH_DETECTED: Acceleration threshold exceeded.");
-        cncState.start = millis();
-        cncState.spindleStart();
-        cncState.commandSent = true;
-        LOGI("STATE: Sequence started.");
-    }
-
-    if (cncState.commandSent && !cncState.commandStopped) {
-
-        if (cncState.step < fileLoader.countLine()) {
-
-            const char* cmd = fileLoader.getLine(cncState.step);
-
-            if (cmd) {
-                cncState.send(cmd);
-                Serial.print("Sending step ");
-                Serial.print(cncState.step);
-                Serial.print(": ");
-                Serial.println(cmd);
-
-                bool gotOk = false;
-                unsigned long timeout = millis();
-                while (!gotOk && (millis() - timeout < 5000)) {
-                    if (Serial8.available()) {
-                        String response = Serial8.readStringUntil('\n');
-                        response.trim();
-                        if (response == "ok") gotOk = true;
-                        if (response.startsWith("error")) {
-                            Serial.print("GRBL error: ");
-                            Serial.println(response);
-                            break;
-                        }
-                    }
-                }
-
-                bool isIdle = false;
-                while (!isIdle) {
-                    Serial8.println("?");
-                    delay(100);
-                    if (Serial8.available()) {
-                        String status = Serial8.readStringUntil('\n');
-                        status.trim();
-                        if (status.startsWith("<Idle")) isIdle = true;
-                    }
-                }
-
-                cncState.step++;
-            }
-
-        } else {
-            cncState.spindleStop();
-            cncState.commandStopped = true;
-            LOGI("STATE: Sequence complete. System Idle.");
-        }
-    }
-
-    cncState.prevAccel = cncState.totalAccel;
 }
 

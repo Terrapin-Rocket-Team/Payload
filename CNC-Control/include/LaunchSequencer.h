@@ -7,8 +7,12 @@
 
 class LaunchSequencer {
 public:
-    LaunchSequencer(CncState& state, FileLoader& loader, BMI088& imu);
-    void begin();
+    CncState& state;
+    FileLoader& loader;
+    BMI088& imu;
+
+    LaunchSequencer(CncState& inState, FileLoader& inLoader, BMI088& inImu);
+
     void update();
 
 private:
@@ -17,8 +21,4 @@ private:
     void runSequence();
     bool waitForOk(unsigned long timeoutMs = 5000);
     bool waitForIdle();
-
-    CncState& _state;
-    FileLoader& _loader;
-    BMI088& _imu;
 };

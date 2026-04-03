@@ -1,15 +1,9 @@
 #include "LaunchSequencer.h"
 #include <RecordData/Logging/EventLogger.h>
 
-LaunchSequencer::LaunchSequencer(CncState inState, FileLoader inLoader, BMI088& inImu) {
-    this->state = inState;
-    this->loader = inLoader;
-    this->imu = inImu;
-}
+LaunchSequencer::LaunchSequencer(CncState& inState, FileLoader& inLoader, BMI088& inImu)
+    : state(inState), loader(inLoader), imu(inImu) {}
 
-void LaunchSequencer::begin() {
-    // Safe to interact with hardware here
-}
 
 void LaunchSequencer::update() {
     updateAcceleration();
@@ -114,5 +108,4 @@ bool LaunchSequencer::waitForIdle() {
         }
     }
 }
-
 
