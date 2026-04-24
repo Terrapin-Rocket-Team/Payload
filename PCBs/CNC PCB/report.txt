@@ -1,0 +1,13 @@
+Info: X scale constrained.
+Info: Y scale constrained.
+Plotted to '/Users/jeremyeager/Desktop/Payload/CNC PCB/CNC PCB-F_Cu.gbr'.
+Plotted to '/Users/jeremyeager/Desktop/Payload/CNC PCB/CNC PCB-B_Cu.gbr'.
+Plotted to '/Users/jeremyeager/Desktop/Payload/CNC PCB/CNC PCB-F_Paste.gbr'.
+Plotted to '/Users/jeremyeager/Desktop/Payload/CNC PCB/CNC PCB-B_Paste.gbr'.
+Plotted to '/Users/jeremyeager/Desktop/Payload/CNC PCB/CNC PCB-F_Silkscreen.gbr'.
+Plotted to '/Users/jeremyeager/Desktop/Payload/CNC PCB/CNC PCB-B_Silkscreen.gbr'.
+Plotted to '/Users/jeremyeager/Desktop/Payload/CNC PCB/CNC PCB-F_Mask.gbr'.
+Plotted to '/Users/jeremyeager/Desktop/Payload/CNC PCB/CNC PCB-B_Mask.gbr'.
+Plotted to '/Users/jeremyeager/Desktop/Payload/CNC PCB/CNC PCB-Edge_Cuts.gbr'.
+Created Gerber job file '/Users/jeremyeager/Desktop/Payload/CNC PCB/CNC PCB-job.gbrjob'.
+Info: Done.
