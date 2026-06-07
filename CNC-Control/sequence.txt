@@ -4,15 +4,20 @@
 ;
 ; Edit the coordinates/feed rates below to match the required foam shape.
 
-G21
-G90
-G94
-G17
+$X          ; Safety: Explicitly unlock GRBL from startup alarm state
+G20         ; Set system units to Inches
+G90         ; Set to Absolute Coordinate positioning
+G94         ; Feed rate is in inches per minute
+G54         ; Use the primary work coordinate system offset
 
-G0 X0 Y0
-G1 X10 Y0 F120
-G1 X10 Y10 F120
-G1 X0 Y10 F120
-G1 X0 Y0 F120
+; --- Begin Zig-Zag Movement Sequence ---
+G1 X0.5 Y0.0 F10.0
+G1 X1.0 Y1.0
+G1 X1.5 Y0.0
+G1 X2.0 Y1.0
+G1 X2.5 Y0.0
+G1 X3.0 Y1.0
+G1 X3.5 Y0.0 ; Reaches edge of 3.5-inch X-axis limit
 
-G0 X0 Y0
+; --- Return to Flight Sequence Home ---
+G1 X0.0 Y0.0 ; Straight line pass back to starting point (0,0)

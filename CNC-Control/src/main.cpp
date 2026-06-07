@@ -109,6 +109,7 @@ void setup() {
     // Send configuration parameters to GRBL (Ensure terminating \n is present)
     Serial8.print("$1=25\n");
     delay(50);
+    while (Serial8.available()) Serial8.read();
 
     // 6. Initialize Astra Rocket Avionics State Machine
     myimu.setMountingOrientation(MountingOrientation::ROTATE_90_Z);
