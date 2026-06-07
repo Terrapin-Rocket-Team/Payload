@@ -31,8 +31,14 @@ void LaunchSequencer::updateAcceleration() {
 }
 
 void LaunchSequencer::checkLaunchDetection() {
-    const float LAUNCH_THRESHOLD = 40.0f;
+    const float LAUNCH_THRESHOLD = 5.0f;
     const unsigned long DETECT_DEBOUNCE_MS = 500;
+
+    Serial.print("Checking launch detection: TotalAccel=");
+    Serial.print(state.totalAccel);
+    Serial.print(", Detect=");
+    Serial.println(state.detect ? "YES" : "NO");
+    
 
     if (state.totalAccel > LAUNCH_THRESHOLD) {
         if (!state.detect) {

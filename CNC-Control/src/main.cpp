@@ -77,7 +77,6 @@ void setup() {
     IStorage* gcodeStorage = StorageFactory::create(StorageBackend::SD_CARD);
     if (!gcodeStorage || !gcodeStorage->begin()) {
         Serial.println("ERROR: SD card init failed!");
-        while (1);
     }
 
     if (!fileLoader.load(*gcodeStorage, GCODE_SEQUENCE_FILE)) {

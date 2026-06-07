@@ -62,6 +62,13 @@ void setup() {
     Serial.println("Unlocking GRBL...");
     Serial8.print("$X\n"); 
     delay(500);
+
+    Serial8.print("G21\n"); // Send a simple G-code command to verify communication
+    Serial8.print("G92 X0 Y0\n"); // Send a simple G-code command to verify communication
+    Serial8.print("$120=150\n"); // Send a simple G-code command to verify communication
+    Serial8.print("$121=150\n"); // Send a simple G-code command to verify communication
+
+    delay(100);
 }
 
 void loop() {
@@ -87,17 +94,17 @@ void loop() {
         if (incomingByte == '1') {
             Serial.println("Action: Jogging X+100");
             // $J= is a Jogging command. G91 is incremental mode.
-            Serial8.print("G91 G1 X10 F100\n");
+            Serial8.print("$J=G91 X100 F100\n");
         } 
         else if (incomingByte == '2') {
             Serial.println("Action: Jogging X-100");
-            Serial8.print("G91 G1 X-10 F100\n");
+            Serial8.print("$J=G91 X-100 F100\n");
         } 
 
         // -- Y-Axis Jogging --
         else if (incomingByte == '3') {
             Serial.println("Action: Jogging Y+100");
-            Serial8.print("$J=G91 Y100 F25\n");
+            Serial8.print("$J=G90 Y5.0 F25\n");
         } 
         else if (incomingByte == '4') {
             Serial.println("Action: Jogging Y-100");

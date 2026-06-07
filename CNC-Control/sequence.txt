@@ -20,4 +20,4 @@ G1 X3.0 Y1.0
 G1 X3.5 Y0.0 ; Reaches edge of 3.5-inch X-axis limit
 
 ; --- Return to Flight Sequence Home ---
-G1 X0.0 Y0.0 ; Straight line pass back to starting point (0,0)
+G1 X0.0 Y1.0 ; Straight line pass back to starting point (0,0)
