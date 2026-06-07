@@ -1,11 +1,6 @@
 #pragma once
 
-#include <Utils/Astra.h>
-#include <State/DefaultState.h>
-#include <Vector.h>
-
-
-using namespace astra;
+#include <RecordData/Storage/IStorage.h>
 
 // Max number of lines the loader can store
 #define MAX_LINES 50
@@ -22,11 +17,11 @@ class FileLoader {
 
 
 
-    bool load(const char* filename);
+    bool load(astra::IStorage& storage, const char* filename);
 
-    const char* getLine(int index);
+    const char* getLine(int index) const;
 
-    int countLine();
+    int countLine() const;
 
 
 

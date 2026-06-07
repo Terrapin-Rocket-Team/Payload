@@ -1,0 +1,18 @@
+; CNC flight cut sequence.
+; Copy this file to the root of the Teensy SD card as sequence.txt.
+; Blank lines and text after semicolons are ignored by the loader.
+;
+; Edit the coordinates/feed rates below to match the required foam shape.
+
+G21
+G90
+G94
+G17
+
+G0 X0 Y0
+G1 X10 Y0 F120
+G1 X10 Y10 F120
+G1 X0 Y10 F120
+G1 X0 Y0 F120
+
+G0 X0 Y0

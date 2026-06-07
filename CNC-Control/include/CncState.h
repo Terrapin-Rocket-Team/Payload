@@ -1,8 +1,8 @@
 #pragma once
 
+#include <Arduino.h>
 #include <Utils/Astra.h>
-#include <State/DefaultState.h>
-#include <Sensors/HW/Accel/ADXL375.h>
+#include <Servo.h>
 #include <Vector.h>
 
 using namespace astra;
@@ -10,28 +10,23 @@ using namespace astra;
 class CncState {
 public:
     void begin(HardwareSerial& serial, Servo& esc_);
-    void update();
     void spindleStart();
     void spindleStop();
-    void send(const char* cmd);                
-    bool sendAndWait(const char* cmd, unsigned long timeout = 1000);
+    void send(const char* cmd);
     void cancelJog();
 
 
     HardwareSerial* grbl = nullptr;
     Servo* esc = nullptr;
     int escPin = 23;
-    long start;
+    unsigned long start = 0;
     Vector<3> accel;
-    float totalAccel;
-    float prevAccel;
-    bool commandSent;
-    bool commandStopped;
-    bool detect;
-    unsigned long detectTime;
-    int step;
-
-    // response buffer
-    void processIncoming();
+    float totalAccel = 0.0f;
+    float prevAccel = 0.0f;
+    bool commandSent = false;
+    bool commandStopped = false;
+    bool detect = false;
+    unsigned long detectTime = 0;
+    int step = 0;
 };
 

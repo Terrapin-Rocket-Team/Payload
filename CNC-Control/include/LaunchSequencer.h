@@ -7,30 +7,34 @@
 
 class LaunchSequencer {
 public:
-<<<<<<< HEAD
+    // Constructor matching the initializer list inside your LaunchSequencer.cpp
+    LaunchSequencer(CncState& inState, FileLoader& inLoader, BMI088& inImu);
+
+    // Main periodic execution pass running in the main loop
+    void update();
+
+private:
+    // Hardware and Core Data Structure References
     CncState& state;
     FileLoader& loader;
     BMI088& imu;
 
-    LaunchSequencer(CncState& inState, FileLoader& inLoader, BMI088& inImu);
+    // Asynchronous State Machine tracking for streaming G-code to GRBL
+    enum class StreamState {
+        IDLE,
+        SEND_NEXT,
+        WAITING_FOR_OK,
+        WAITING_FOR_IDLE
+    };
 
-=======
-    LaunchSequencer(CncState& state, FileLoader& loader, BMI088& imu);
->>>>>>> 1765d448d2c1068f4e5883d4d1b52a3980737428
-    void update();
+    StreamState streamState;
+    String rxBuffer;
+    unsigned long lastQueryTime;
+    unsigned long lastLogTime;
 
-private:
+    // Internal Asynchronous Flight & Sequencing Worker Methods
     void updateAcceleration();
     void checkLaunchDetection();
     void runSequence();
-    bool waitForOk(unsigned long timeoutMs = 5000);
-    bool waitForIdle();
-<<<<<<< HEAD
+    void parseGrblResponse();
 };
-=======
-
-    CncState& _state;
-    FileLoader& _loader;
-    BMI088& _imu;
-};
->>>>>>> 1765d448d2c1068f4e5883d4d1b52a3980737428
