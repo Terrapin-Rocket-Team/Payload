@@ -1,5 +1,5 @@
 function simulate_EH(audio_file)
-% v1: magnet/coil EH array. Printed summary only — no plots.
+% v1: magnet/coil EH array. 
 
     % --- load input disturbance (audio -> base acceleration) ---
     [x, fs] = audioread(audio_file);
